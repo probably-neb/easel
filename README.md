@@ -1,8 +1,8 @@
-#CANVAS CLI
+# CANVAS CLI
 
-###A WIP client for interacting with Canvas by Instructure's LMS REST API
+### A WIP client for interacting with Canvas by Instructure's LMS REST API
 
-##TODO
+## TODO
 - submitting files
 - viewing files posted to course
 - downloading course structure for local access
