@@ -1,10 +1,20 @@
 import json
 import requests
-from canvas_file_tree import CanvasFile
+# from file_tree import CanvasItem
 from pprint import pprint
 
-config_file = open("canvas_cli_config.json", 'r')
+config_file = open("easel.json", 'r')
 config = json.loads(config_file.read())
+
+def get_request(path, params=None, headers=None):
+    domain, header = get_domain_header()
+    if headers:
+        header |= headers
+    if not path.startswith("https://"):
+        url = domain + path
+    else:
+        url = path
+    return requests.get(url, headers=header, params=params)
 
 def get_domain_header():
     domain = config["info"]["domain"]
@@ -14,10 +24,9 @@ def get_domain_header():
     return domain, header
 
 def get_favorite_courses():
-    domain, header = get_domain_header()
     param = {'per_page': 100, 'include': "favorites"}
-    url = f"{domain}courses"
-    response = requests.get(url, headers=header, params=param)
+    path = "courses"
+    response = get_request(path, params=param)
     courses = response.json()
     favorite_courses = []
     for course in courses:
@@ -28,30 +37,26 @@ def get_favorite_courses():
             continue
     return favorite_courses
 
-def get_course_id(course):
-    return course["id"]
-
-def get_course_files(course_id):
-    domain, header = get_domain_header()
-    url = f"{domain}courses/{course_id}/files"
-    response = requests.get(url, headers=header)
+def get_course_files(course_id, type="folders"):
+    path = f"courses/{course_id}/{type}"
+    response = get_request(path)
     return response.json()
 
-def get_course_name(course):
-    return course["course_code"]
+def get_folder(folder_id, course_id=None):
+    path = f"folders/{folder_id}"
+    if course_id:
+        path = f"courses/{course_id}/{path}"
+    return get_request(path)
 
-def course_file_structure():
-    favorite_courses = get_favorite_courses() 
-    course_ids = {}
-    for course in favorite_courses:
-        course_ids[get_course_id(course)] = get_course_name(course)
-    root = CanvasFile(name='root', is_file=False)
-    root.add_children(list(course_ids.values()))
-    return root
+def init_file_structure():
+    courses = {}
+    for course in get_favorite_courses():
+        course_data = { "name": course["name"],"info": course}
+        courses[course["id"]] = course_data
+    with open('easelstructure.json', 'w') as struc:
+        struc.write(json.dumps(courses, indent=2))
+        struc.close()
 
 if __name__ == "__main__":
-    root = course_file_structure()
-    tree = root.build_tree()
-    for entry in tree:
-        print(entry)
-
+    init_file_structure()
+    
