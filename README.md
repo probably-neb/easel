@@ -22,3 +22,17 @@
 - implement fuzzy finding for assignments, courses, files, etc
 - optimize
 	- parallel requests
+
+
+Create a config file name "easel.json" in the canvas_cli folder.
+```json
+{
+	"info" : {
+		"domain": "canvas.[school].edu",
+		"token" : "token"
+	}
+}
+```
+
+
+
