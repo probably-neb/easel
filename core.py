@@ -7,6 +7,10 @@ config_file = open("easel.json", 'r')
 config = json.loads(config_file.read())
 
 def get_request(path, params=None, headers=None):
+    """sends a get request
+    path: the http path to the object i.e course/{course_id}/modules/{modules_id}
+        path can start with https:// or not
+    """
     domain, header = get_domain_header()
     if headers:
         header |= headers

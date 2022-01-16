@@ -2,10 +2,8 @@ import core
 import pdfkit
 import os
 
-def download_page(course_id= "72755", page_name= "1-dot-4-toulmin-model-of-argumentation"):
+def download_page(course_id, page_name):
     with open('page.html', 'w') as page:
-        # page_name =
-        # course_id =
         res = core.get_request(f"/courses/{course_id}/pages/{page_name}")
         print(res.json()["body"])
         page.write(res.json()["body"])
