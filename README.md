@@ -1,5 +1,4 @@
-# CANVAS CLI
-
+# EASEL
 ### A WIP client for interacting with Canvas by Instructure's LMS REST API
 
 ## TODO

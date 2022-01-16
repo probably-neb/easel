@@ -21,6 +21,8 @@ def get_request(path, params=None, headers=None):
     return requests.get(url, headers=header, params=params)
 
 def get_domain_header():
+    """loads domain name and user api token from config and creates the request header from the token"""
+
     domain = config["info"]["domain"]
     token = config["info"]["token"]
     header = {'Authorization': 'Bearer ' + token}
@@ -28,6 +30,7 @@ def get_domain_header():
     return domain, header
 
 def get_favorite_courses():
+    """gets courses that are favorited"""
     param = {'per_page': 100, 'include': "favorites"}
     path = "courses"
     response = get_request(path, params=param)
@@ -42,17 +45,22 @@ def get_favorite_courses():
     return favorite_courses
 
 def get_course_files(course_id, type="folders"):
+    """gets files from course with course_id"""
+
     path = f"courses/{course_id}/{type}"
     response = get_request(path)
     return response.json()
 
 def get_folder(folder_id, course_id=None):
+    """gets folder with folder_id from course with course_id"""
+
     path = f"folders/{folder_id}"
     if course_id:
         path = f"courses/{course_id}/{path}"
     return get_request(path)
 
 def init_file_structure():
+    """creates easelstructure.json"""
     courses = {}
     for course in get_favorite_courses():
         course_data = { "name": course["name"],"info": course}
@@ -61,6 +69,7 @@ def init_file_structure():
         struc.write(json.dumps(courses, indent=2))
         struc.close()
 
+"""this exists so you can run core and make it do stuff"""
 if __name__ == "__main__":
     init_file_structure()
     
