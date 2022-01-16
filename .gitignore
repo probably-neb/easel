@@ -1,3 +1,4 @@
 canvas_cli_venv/
 __pycache__/
-canvas_cli_config.json
+easel.json
+easelstructure.json
