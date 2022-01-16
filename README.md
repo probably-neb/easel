@@ -3,13 +3,14 @@
 ### A WIP client for interacting with Canvas by Instructure's LMS REST API
 
 ## TODO
-	- NAME at least temp name: easel
-	- parse json to FileTree for reading
-		- viewing files posted to course
-			- modules
-				- items
-			- assignments
-			- pages
+
+- NAME at least temp name: easel
+- parse json to FileTree for reading
+	- viewing files posted to course
+		- modules
+			- items
+		- assignments
+		- pages
 - CLI interaction 
 	- for better testing:
 		- pass variables to functions
