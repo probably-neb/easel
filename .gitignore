@@ -2,7 +2,3 @@ canvas_cli_venv/
 __pycache__/
 easel.json
 easelstructure.json
-<<<<<<< HEAD
-=======
-canvas_cli_config.json
->>>>>>> bf74b2db60410d3403b7153820cef915668e3672
