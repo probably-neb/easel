@@ -1,75 +1,59 @@
 import json
 import requests
-# from file_tree import CanvasItem
+from requests import HTTPError
 from pprint import pprint
-
-config_file = open("easel.json", 'r')
-config = json.loads(config_file.read())
-
-def get_request(path, params=None, headers=None):
-    """sends a get request
-    path: the http path to the object i.e course/{course_id}/modules/{modules_id}
-        path can start with https:// or not
-    """
-    domain, header = get_domain_header()
-    if headers:
-        header |= headers
-    if not path.startswith("https://"):
-        url = domain + path
-    else:
-        url = path
-    return requests.get(url, headers=header, params=params)
-
-def get_domain_header():
-    """loads domain name and user api token from config and creates the request header from the token"""
-
-    domain = config["info"]["domain"]
-    token = config["info"]["token"]
-    header = {'Authorization': 'Bearer ' + token}
-    domain = 'https://' + domain + '/api/v1/'
-    return domain, header
-
-def get_favorite_courses():
-    """gets courses that are favorited"""
-    param = {'per_page': 100, 'include': "favorites"}
-    path = "courses"
-    response = get_request(path, params=param)
-    courses = response.json()
-    favorite_courses = []
-    for course in courses:
-        try:
-            if course["is_favorite"]:
-                favorite_courses.append(course)
-        except KeyError:
-            continue
-    return favorite_courses
-
-def get_course_files(course_id, type="folders"):
-    """gets files from course with course_id"""
-
-    path = f"courses/{course_id}/{type}"
-    response = get_request(path)
-    return response.json()
-
-def get_folder(folder_id, course_id=None):
-    """gets folder with folder_id from course with course_id"""
-
-    path = f"folders/{folder_id}"
-    if course_id:
-        path = f"courses/{course_id}/{path}"
-    return get_request(path)
+from files import get_files
+from courses import get_favorite_courses
+from modules import get_modules
+from pages import get_pages
+from api_request import get_request, check_response, CanvasNoAccessError
+import config
 
 def init_file_structure():
     """creates easelstructure.json"""
     courses = {}
+    hr = '-'*10
     for course in get_favorite_courses():
-        course_data = { "name": course["name"],"info": course}
-        courses[course["id"]] = course_data
+        name = course["name"]
+
+        # print(f"attempting info for course {name}")
+        course_data = { "name": name ,"info": course}
+        id = course["id"]
+
+        """For each, if no access then CanvasNoAccessError will be raised. User is notified through print statement and None type is added to file structure"""
+
+        # print(f"attempting modules for course {name}")
+        try:
+            modules = get_modules(id)
+        except CanvasNoAccessError as e:
+            no_access('modules', name)
+            modules = "That page has been disabled for this course"
+        course_data['modules'] = modules
+
+        # print(f"attempting pages for course {name}")
+        try:
+            pages = get_pages(id)
+        except CanvasNoAccessError as e:
+            no_access('pages', name)
+            pages = "That page has been disabled for this course"
+        course_data['pages'] = pages
+
+        # print(f"attempting files for course {name}")
+        try:
+            files = get_files(id)
+        except CanvasNoAccessError as e:
+            no_access('files', name)
+            files = "That page has been disabled for this course"
+        course_data['files'] = files
+
+        courses[id] = course_data
     with open('easelstructure.json', 'w') as struc:
         struc.write(json.dumps(courses, indent=2))
         struc.close()
 
+def no_access(obj_type, course_name):
+    print(f"No access to {obj_type} for course {course_name}.")
+
 """this exists so you can run core and make it do stuff"""
 if __name__ == "__main__":
     init_file_structure()
-    

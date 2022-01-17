@@ -5,11 +5,8 @@
 
 - NAME at least temp name: easel
 - parse json to FileTree for reading
-	- viewing files posted to course
-		- modules
-			- items
-		- assignments
-		- pages
+	- assignments
+	- make array of ids : names for each course and add it to course json so ids can be acquired but json uses names for human readability
 - CLI interaction 
 	- for better testing:
 		- pass variables to functions
