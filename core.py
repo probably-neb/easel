@@ -8,6 +8,24 @@ from modules import get_modules
 from pages import get_pages
 from api_request import get_request, check_response, CanvasNoAccessError
 import config
+import threading
+
+def parse(type,name,id,course_data):
+    obj = None
+    try:
+        if type == 'modules':
+            obj = get_modules(id)
+        elif type == 'files':
+            obj = get_files(id)
+        elif type == 'pages':
+            obj = get_pages(id)
+        if not obj:
+            obj = "Nothing has been posted to this page"
+    except CanvasNoAccessError:
+        out = f'The page {type} has been disabled for course {name}.'
+        print(out)
+        obj = out
+    course_data[type] = obj
 
 def init_file_structure():
     """creates easelstructure.json"""
@@ -22,37 +40,24 @@ def init_file_structure():
 
         """For each, if no access then CanvasNoAccessError will be raised. User is notified through print statement and None type is added to file structure"""
 
-        # print(f"attempting modules for course {name}")
-        try:
-            modules = get_modules(id)
-        except CanvasNoAccessError as e:
-            no_access('modules', name)
-            modules = "That page has been disabled for this course"
-        course_data['modules'] = modules
+        threads = []
+        for i in ['pages','files','modules']:
+            thread = threading.Thread(target=parse, args=(i,name,id,course_data))
+            threads.append(thread)
 
+        for i in range(len(threads)):
+            threads[i].start()
+
+        for i in range(len(threads)):
+            threads[i].join()
         # print(f"attempting pages for course {name}")
-        try:
-            pages = get_pages(id)
-        except CanvasNoAccessError as e:
-            no_access('pages', name)
-            pages = "That page has been disabled for this course"
-        course_data['pages'] = pages
 
         # print(f"attempting files for course {name}")
-        try:
-            files = get_files(id)
-        except CanvasNoAccessError as e:
-            no_access('files', name)
-            files = "That page has been disabled for this course"
-        course_data['files'] = files
-
         courses[id] = course_data
     with open('easelstructure.json', 'w') as struc:
         struc.write(json.dumps(courses, indent=2))
         struc.close()
 
-def no_access(obj_type, course_name):
-    print(f"No access to {obj_type} for course {course_name}.")
 
 """this exists so you can run core and make it do stuff"""
 if __name__ == "__main__":

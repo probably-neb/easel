@@ -2,3 +2,4 @@ canvas_cli_venv/
 __pycache__/
 easel.json
 easelstructure.json
+cement.link
