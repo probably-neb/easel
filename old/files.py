@@ -1,5 +1,5 @@
 from courses import get_favorite_courses
-from pprint import pprint
+
 from api_request import get_request, check_response
 import requests
 
@@ -26,5 +26,5 @@ def get_folders(folder_id, course_id=None):
 def download_file(url):
     file = get_request(url)
     download = get_request(file.json()["url"])
-    pprint(file.content)
+    # pprint(file.content)
     open(file.json()["display_name"], 'wb').write(download.content)

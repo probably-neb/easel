@@ -1,0 +1,9 @@
+cement==3.0.6
+asyncio
+aiohttp
+aiofile
+jinja2
+pyyaml
+colorlog
+tinydb
+requests

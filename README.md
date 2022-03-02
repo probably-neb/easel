@@ -1,35 +1,68 @@
-# EASEL
-### A WIP client for interacting with Canvas by Instructure's LMS REST API
+# Cli interface for interacting with the Canvas LMS REST API
 
-## TODO
+## Installation
+```
+$ pip install -r requirements.txt
 
-- NAME at least temp name: easel
-- parse json to FileTree for reading
-	- assignments
-	- make array of ids : names for each course and add it to course json so ids can be acquired but json uses names for human readability
-- CLI interaction 
-	- for better testing:
-		- pass variables to functions
-		- simple output [item id's]
-	- PyInquirer
-			- how to display tree and select files to download
-			- how to submit / choose assignment
-			- loading bars
-- submitting files
-- implement fuzzy finding for assignments, courses, files, etc
-- optimize
-	- parallel requests
+$ python setup.py install
+```
+
+## Development
+
+This project includes a number of helpers in the `Makefile` to streamline common development tasks.
+
+### Environment Setup
+
+The following demonstrates setting up and working with a development environment:
+
+```
+### create a virtualenv for development
+
+$ make virtualenv
+
+$ source env/bin/activate
 
 
-Create a config file name "easel.json" in the canvas_cli folder.
-```json
-{
-	"info" : {
-		"domain": "canvas.[school].edu",
-		"token" : "token"
-	}
-}
+### run easel cli application
+
+$ easel --help
+
+
+### run pytest / coverage
+
+$ make test
 ```
 
 
+### Releasing to PyPi
 
+Before releasing to PyPi, you must configure your login credentials:
+
+**~/.pypirc**:
+
+```
+[pypi]
+username = YOUR_USERNAME
+password = YOUR_PASSWORD
+```
+
+Then use the included helper function via the `Makefile`:
+
+```
+$ make dist
+
+$ make dist-upload
+```
+
+## Deployments
+
+### Docker
+
+Included is a basic `Dockerfile` for building and distributing `Easel`,
+and can be built with the included `make` helper:
+
+```
+$ make docker
+
+$ docker run -it easel --help
+```

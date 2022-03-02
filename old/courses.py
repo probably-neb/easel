@@ -1,8 +1,6 @@
-import json
-import requests
-from api_request import get_request, check_response
-# from file_tree import CanvasItem
+from api_request import *
 
+# from file_tree import CanvasItem
 def get_favorite_courses():
     """gets courses that are favorited"""
     param = {'per_page': 100, 'include': "favorites"}
