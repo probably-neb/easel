@@ -1,6 +1,6 @@
 # Cli interface for interacting with the Canvas LMS REST API
 
-## Installation
+## Installation *Requires Python 3.9 or older. 3.10 does not work*
 ```
 $ pip install -r requirements.txt
 
