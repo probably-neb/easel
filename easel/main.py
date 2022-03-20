@@ -1,24 +1,26 @@
 from cement import App, TestApp, init_defaults
 from cement.core.exc import CaughtSignal
+
 from .core.exc import easelError
 from .controllers.base import Base
 from .controllers.courses import Courses
-
+from .controllers.assignments import Assignments
 # configuration defaults
 CONFIG = init_defaults('easel.yml')
 CONFIG['easel.yml']['course_structure'] = '~/Dropbox/code/py/easel/course-structure.json'
 
 import os
 from tinydb import TinyDB
+from .core.utils import EaselUtils
 from cement.utils import fs
 
 def extend_tinydb(app):
-    app.log.info('using tinydb to store course structure')
+    # app.log.info('using tinydb to store course structure')
     db_file = app.config.get('easel.yml', 'course_structure')
     
     # ensure that we expand the full path
     db_file = fs.abspath(db_file)
-    app.log.info('tinydb database file is: %s' % db_file)
+    # app.log.info('tinydb database file is: %s' % db_file)
     
     # ensure our parent directory exists
     db_dir = os.path.dirname(db_file)
@@ -27,6 +29,8 @@ def extend_tinydb(app):
 
     app.extend('db', TinyDB(db_file, indent=2))
 
+def extend_utils(app):
+    app.extend('utils', EaselUtils(app))
 
 class easel(App):
     """Easel primary application."""
@@ -34,6 +38,7 @@ class easel(App):
     class Meta:
         hooks = [
                 ('post_setup',extend_tinydb),
+                ('post_setup', extend_utils)
         ]
         label = 'easel'
 
@@ -54,6 +59,9 @@ class easel(App):
         # configuration handler
         config_handler = 'yaml'
 
+        #plugins 
+        # plugin_dirs = ['./plugins']
+
         # configuration file suffix
         config_file_suffix = '.yml'
 
@@ -67,6 +75,7 @@ class easel(App):
         handlers = [
             Base,
             Courses,
+            Assignments,
         ]
 
 class easelTest(TestApp,easel):

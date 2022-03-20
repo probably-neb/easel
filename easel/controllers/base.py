@@ -1,13 +1,7 @@
-
 from cement import Controller, ex
 from cement.utils.version import get_version_banner
 from ..core.version import get_version
-import json
-import config
-import asyncio
-import timeit
-import aiohttp
-import aiofile
+from ..controllers.courses import Courses
 
 VERSION_BANNER = """
 Canvas api cli app %s
@@ -31,35 +25,48 @@ class Base(Controller):
             ( [ '-v', '--version' ],
               { 'action'  : 'version',
                 'version' : VERSION_BANNER } ),
-        ]
+            (
+              [ '-c', '--courses' ],
+              { 'action' : 'store_true', 
+               'dest' : 'course'}),
 
+            ( [ '-u', '--update' ],
+                { 'help' : 'update all canvas data',
+                    'action'  : 'store_true',
+                    'dest' : 'update' }),
+            ( [ '-t', '--truncate' ],
+                { 'help' : 'command to clean database. [WARNING] THIS IS NOT REVERSABLE',
+                    'action'  : 'store_true',
+                    'dest' : 'truncate' } ),
+        ]
 
     def _default(self):
         """Default action if no sub-command is passed."""
-        self.app.args.print_help()
+        if self.app.pargs.update:
+            self.app.handler.resolve('controller', 'courses', setup=True).update()
+        elif self.app.pargs.truncate:
+            self.app.db.truncate()
+        else:
+            self.app.args.print_help()
 
+    @ex(help='test a function')
+    def test(self):
+        print(self.app.hook.defined('utils'))
 
-    @ex(
-        help='example sub command1',
+    # class Meta:
+    #     label = 'courses'
+    #     stacked_type="nested"
+    #     stacked_on="base"
+    #     arguments=[
+    #         ( [ '-u', '--update' ],
+    #             { 'help' : 'update course data',
+    #                 'action'  : 'store_true',
+    #                 'dest' : 'update' } ),
+    #             ]
 
-        # sub-command level arguments. ex: 'easel command1 --foo bar'
-        arguments=[
-            ### add a sample foo option under subcommand namespace
-            ( [ '-f', '--foo' ],
-              { 'help' : 'notorious foo option',
-                'action'  : 'store',
-                'dest' : 'foo' } ),
-        ],
-    )
-    def command1(self):
-        """Example sub-command."""
-
-        data = {
-            'foo' : 'bar',
-        }
-
-        ### do something with arguments
-        if self.app.pargs.foo is not None:
-            data['foo'] = self.app.pargs.foo
-
-        self.app.render(data, 'command1.jinja2')
+    # def _default(self):
+    #     """Default action if no sub-command is passed."""
+    #     if self.app.pargs.update is not None:
+    #         self.list()
+    #     else:
+    #         self.app.args.print_help()
