@@ -2,6 +2,8 @@ from cement import Controller, ex
 from cement.utils.version import get_version_banner
 from ..core.version import get_version
 from ..controllers.courses import Courses
+from pprint import pprint
+from tinydb import Query
 
 VERSION_BANNER = """
 Canvas api cli app %s
@@ -45,13 +47,34 @@ class Base(Controller):
         if self.app.pargs.update:
             self.app.handler.resolve('controller', 'courses', setup=True).update()
         elif self.app.pargs.truncate:
-            self.app.db.truncate()
+            self.app.db.drop_tables()
         else:
             self.app.args.print_help()
 
     @ex(help='test a function')
     def test(self):
         print(self.app.hook.defined('utils'))
+
+    @ex(help='print database (mostly used for logging')
+    def list(self):
+        with self.app.db as db:
+            for table in db.tables():
+                pprint(db.table(table))
+
+    @ex(help='get an example of a document item',
+        arguments = [
+            ### add a version banner
+            ( ['type'],
+              {#'action'  : 'store',
+              'choices': ["page","module","course","assignment_group"]}),
+              ],
+        )
+    def get(self):
+        type = self.app.pargs.type + 's'
+        print(self.app.db.table(type).get((Query().id.exists()) | (Query().title.exists())))
+        
+        
+        
 
     # class Meta:
     #     label = 'courses'

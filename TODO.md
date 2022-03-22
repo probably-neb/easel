@@ -27,10 +27,15 @@
 				- then for course in favorite courses call get_item for each item in course and merge with preexisting somehow?
 	- [ ] multiple nicknames for courses
 #### CLI interaction 
+	**- [ ] Use python code or templates for output?**
+	assignments:
+	- [ ] how to submit / choose assignment 
+			- [ ] choosing assignment by search term (searches assignment name and attachment name)
+	- [ ] choosing course for action 
+	general:
 	- [ ] using flags in base to call parsers of subcommands like courses (using _get_parser...)
 	- [ ] arguments for functions
 	- [ ] how to display tree and select files to download (user prompt)
-	- [ ] how to submit / choose assignment **(user prompt)**
 	- [ ] loading bars
 	- [ ] provide ability to load functions in 
 		- [ ] like "download_midterm2.py" which can then be run by easel and executed
@@ -41,6 +46,7 @@
 	- [ ] make docs lol
 #### General
 	- [ ] plugins: 
-		- [ ] ability to dynamically load plugins into cement
+		- [ ] ability to dynamically load plugins into cement (maybe use generate command)
 		- [ ] run plugins as command
 		- [ ] like "download_midterm2.py" which can then be run by easel and executed
+	- [ ] "watchdog" extension config option for when assignments get moved etc

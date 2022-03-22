@@ -6,8 +6,7 @@ import json
 import config
 import asyncio
 import timeit
-import aiohttp
-import aiofile
+# from aiohttp import aiofile
 from ..core.api import get_course_structure
 from tinydb import Query 
 from tinydb.table import Document
@@ -18,7 +17,6 @@ VERSION_BANNER = """
 Canvas api cli app %s
 %s
 """ % (get_version(), get_version_banner())
-
 
 class Courses(Controller):
     class Meta:
@@ -53,7 +51,7 @@ class Courses(Controller):
     )
     def list(self):
         """list courses"""
-        courses_info = self.app.utils.get_course_names_and_ids()
+        courses_info = self.app.dbfuncs.get_course_names_and_ids()
         try: 
             ids = self.app.pargs.ids
             names = self.app.pargs.names
@@ -74,25 +72,20 @@ class Courses(Controller):
     def _print_course_column(self, id, name):
         print(f"{' '*3} {id:<6} | {name}")
 
-
     @ex(help='update database')
     def update(self):
         start_time = time.time()
-        res = asyncio.run(get_course_structure())
-        course_names = []
-        # self.app.db.truncate()
-        for item in res:
-            if item.get("user") == True:
-                # id 0 for user info
-                self.app.db.upsert(Document(item, doc_id=0))
-            else:
-                self.app.db.upsert(Document(item, doc_id=item.get("id")))
-            # if item.get("name") and item.get("course") == True:
-                course_names.append(item["name"])
+        type_tables = asyncio.run(get_course_structure())
+        print(type_tables.keys())
+        # ctime = time.time()
+            # self.app.db.insert_multiple(item)
+        self.app.dbfuncs.store_tables(type_tables)
+        # etime = time.time()
+        # print(f"store took {(etime - ctime):.4}")
         end_time = time.time()
         self.app.log.info(f'Course Structure Update Success! Took {(end_time-start_time):.4} seconds')
         self.list()
-    
+
     @ex(
         help='add or change a nickname for a course. Makes course specific easel commands much easier (only shows up in easel)',
 
@@ -122,7 +115,7 @@ class Courses(Controller):
         search_term = self.app.pargs.sterm
         id = self.app.pargs.id
         nickname = self.app.pargs.nickname
-        courses = dict(self.app.utils.get_course_names_and_ids())
+        courses = dict(self.app.dbfuncs.get_course_names_and_ids())
         course = None
         if search_term is None and id is None:
             selection = shell.Prompt("Choose a course to nickname:",
@@ -151,9 +144,7 @@ class Courses(Controller):
             if self.app.pargs.prompt:
                 verification = shell.Prompt(f"Add nickname: \"{nickname}\", to course: {course}?", options=["yes","no"], default='yes').input == "yes"
             if verification:
-                self.app.utils.add_course_nickname(id, nickname)
+                self.app.dbfuncs.add_course_nickname(id, nickname)
                 print(f"Succesfully added nickname: \"{nickname}\" to course: {course}")
             else:
                 print(f"Failed to add nickname: \"{nickname}\" to course: {course}")
-
-

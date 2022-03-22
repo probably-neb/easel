@@ -34,37 +34,32 @@ async def download_page(course_id, page_name,session):
 async def get_pages(course_id,session):
     """gets pages from course course_id"""
     res = await get_request(f"courses/{course_id}/pages", session)
-    pages = {}
-    for page in await res.json():
-        pages[page["url"]] = page
+    pages = await res.json()
+    # for page in pages:
+        #page only object without "id". this avoids checking type every time searching with id
+        # page["id"] = page["url"]
     return pages
 
 async def get_modules(course_id,session):
     """gets modules from course with course_id"""
     mods = await get_request(f"courses/{course_id}/modules", session)
-    modules = {}
-    for mod in await mods.json():
-        name = mod["name"]
-        res = await get_request(mod["items_url"], session)
-        items = {}
-        for item in await res.json():
-            title = item["title"]
-            items[title] = item
-        modules[name] = items
+    modules = await mods.json()
+    items = {}
+    for mod in modules:
+        module_id = mod["id"]
+        res = await get_request(f"courses/{course_id}/modules/{module_id}/items", session)
+        items = await res.json()
+        mod["items"] = items
     return modules
 
 async def get_files(course_id,session,search_term=None):
     """gets files from course with course_id"""
-    # print(course_id)
     root_path = f"courses/{course_id}/"
     param=None
     if search_term:
         param={"search_term":search_term}
     res = await get_request(root_path + 'files',session, params=param)
-    files = {}
-    # pprint(res.json())
-    for file in await res.json():
-        files[file["display_name"]] = file
+    files = await res.json()
     return files
 
 async def get_folders(folder_id,session, course_id=None):
@@ -98,15 +93,9 @@ async def get_assignment_submission_data(session, course_id, assignment_id, user
     sub = await get_request(url, session)
     return await sub.json()
 
-# async def get_assignment_groups(course_id, session) 
-#     res = await get_request(f"courses/{course_id}/assignment_groups")
-#     for group in 
-
-
 async def get_assignments(course_id, session):
     """gets pages from course course_id"""
     params = {'include': '"score_statistics","submission", "assignments"'}
-    # res = await get_request(f"courses/{course_id}/assignments", session,params=params)
     res = await get_request(f"courses/{course_id}/assignment_groups", session,params=params)
     assignment_groups = await res.json()
     # from cement import App
@@ -204,9 +193,8 @@ async def check_response(res):
     except (AttributeError,aiohttp.ClientResponseError, ValueError) as e:
         raise CanvasNoAccessError("That page has been disabled for this course")
 
-async def parse(type,name,id,session):
-    obj = None
-    # print(f"attempting:   {' '*(6-len(type))}[ {type} ]{' '*(7-len(type))}   for course:   {name}")
+async def parse(type,id, tables, session):
+    obj = []
     try:
         if type == 'modules':
             obj = await get_modules(id, session)
@@ -217,56 +205,46 @@ async def parse(type,name,id,session):
         elif type == 'assignment_groups':
             obj = await get_assignments(id, session)
         if not obj:
-            obj = "Nothing has been posted to this page"
+            obj = []
     except CanvasNoAccessError:
-        out = f'The page {type} has been disabled for course {name}.'
-        # print(out)
-        obj = out
-    return type,obj
+        obj = []
+    for item in obj:
+        # item["type"] = type
+        item["course_id"] = id
+    tables[type] += obj
+    return {type: obj}
 
-async def get_course_data(course, session):
-    course_data = {}
-    course_data['name'],name = course["name"],course["name"]
-    course_data['id'], id = course["id"],course["id"]
-    course_data['info'] = course
 
-    """For each, if no access then CanvasNoAccessError will be raised. User is notified through print statement and None type is added to file structure"""
+async def get_course_data(id, tables, session):
     threads = []
-    for i in ['pages','files','modules','assignment_groups']:
-        thread = asyncio.create_task(parse(i,name,id,session))
+    """For each, if no access then CanvasNoAccessError will be raised. User is notified through print statement and None type is added to file structure"""
+
+    for type in ['pages','files','modules','assignment_groups']:
+        if not tables.get(type):
+            tables[type] = []
+        thread = asyncio.create_task(parse(type,id,tables, session))
         threads.append(thread)
-    data = await asyncio.gather(*threads)
-    for type, obj in data:
-        course_data[type] = obj
-    course_data["course"] = True
-    return course_data
+    course_items = await asyncio.gather(*threads)
+    # [{'type' : [items of type]}, {'type2' : [items of type2]}...]
+    return course_items
 
 async def get_course_structure():
     """creates easelstructure.json"""
-    courses = []
+    tables = {}
     hr = '-'*10
     async with aiohttp.ClientSession() as session:
         favorite_courses = await get_favorite_courses(session)
+        tables["courses"] = favorite_courses
         course_tasks = []
-        course_names = []
         # loop = asyncio.get_running_loop()
         # global user_id 
         # user_id = loop.create_future()
-        course_tasks.append(asyncio.create_task(get_users(session)))
+        # course_tasks.append(asyncio.create_task(get_users(session)))
         for course in favorite_courses:
-            # print(course["name"], hr, sep='\n')
-            course_task = asyncio.create_task(get_course_data(course,session))
+            course_task = asyncio.create_task(get_course_data(course["id"], tables, session))
             course_tasks.append(course_task)
-        courses_data = await asyncio.gather(*course_tasks)
-        for course_data in courses_data:
-            courses.append(course_data)
-        return courses
-            # pprint(courses)
-            
-# def course_structure(courses_data):
-#     for id, course_data in courses_data:
-#         print(id, course_data["name"])
-
-# """this exists so you can run core and make it do stuff"""
-# if __name__ == "__main__":
-#    print("async\t\t",timeit.timeit(lambda: asyncio.run(init_file_structure()), number=1))
+            # course["type"] = "course"
+        courses_items = await asyncio.gather(*course_tasks)
+        # for course_items in courses_items:
+        #     tables |= course_items
+        return tables
