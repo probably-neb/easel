@@ -19,6 +19,10 @@ test:
 		--cov-report=html:coverage-report \
 		tests/
 
+profile:
+	python -m cProfile -o profile.txt -m easel.main -u
+	python profile_stats.py
+
 docker: clean
 	docker build -t easel:latest .
 

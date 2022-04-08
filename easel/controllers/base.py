@@ -1,15 +1,19 @@
 from cement import Controller, ex
 from cement.utils.version import get_version_banner
+from cement.utils import fs
 from ..core.version import get_version
+from ..core import api
 from ..controllers.courses import Courses
 from pprint import pprint
 from tinydb import Query
+import asyncio
+import time
+import os
 
 VERSION_BANNER = """
 Canvas api cli app %s
 %s
 """ % (get_version(), get_version_banner())
-
 
 class Base(Controller):
     class Meta:
@@ -47,7 +51,7 @@ class Base(Controller):
         if self.app.pargs.update:
             self.app.handler.resolve('controller', 'courses', setup=True).update()
         elif self.app.pargs.truncate:
-            self.app.db.drop_tables()
+            os.remove(fs.abspath(self.app.config.get('easel.yml', 'course_structure')))
         else:
             self.app.args.print_help()
 
@@ -65,31 +69,49 @@ class Base(Controller):
         arguments = [
             ### add a version banner
             ( ['type'],
-              {#'action'  : 'store',
-              'choices': ["page","module","course","assignment_group"]}),
+              {'choices': ["page","module","course","assignment_group","assignment"]}),    #"all"]
+            ( [ '-t', '--template' ],
+              {'action' : 'store_true',
+               'dest': 'template'}),
+            ( [ '-r', '--request' ],
+              {'action' : 'store_true',
+               'dest': 'request'}),
               ],
         )
     def get(self):
-        type = self.app.pargs.type + 's'
-        print(self.app.db.table(type).get((Query().id.exists()) | (Query().title.exists())))
-        
-        
-        
+        import random
+        type = self.app.pargs.type
+        template = self.app.pargs.template
+        request = self.app.pargs.request
 
-    # class Meta:
-    #     label = 'courses'
-    #     stacked_type="nested"
-    #     stacked_on="base"
-    #     arguments=[
-    #         ( [ '-u', '--update' ],
-    #             { 'help' : 'update course data',
-    #                 'action'  : 'store_true',
-    #                 'dest' : 'update' } ),
-    #             ]
+        # in order to have request probably need better get request methods that takes types to get
+        # if request is not None:
+        #     item = asyncio.run("api.get_" + type + "s")
+        #     pprint(item)
+        
+        table_type = type + "_groups" if type == "assignment" else type + 's'
+        items = self.app.db.table(table_type).search((Query().id.exists()) | (Query().title.exists()))
+        item = items[random.randint(0, len(items) - 1)] if len(items) >= 1 else None
 
-    # def _default(self):
-    #     """Default action if no sub-command is passed."""
-    #     if self.app.pargs.update is not None:
-    #         self.list()
-    #     else:
-    #         self.app.args.print_help()
+        if "assignment" in type:
+            if "_group" in type:
+                # assignment list often quite long ("thousands of lines") so dont show it
+                item["assignments"] = []
+            else:
+                item = item["assignments"][random.randint(0, len(item["assignments"]) - 1)] if len(item["assignments"]) >= 1 else None
+
+        if not template:
+            pprint(item)
+        else:
+            self.app.render({type : item}, type + '.jinja2')
+
+    @ex(help='list upcoming calendar events')
+    def upcoming(self):
+        pprint(self.app.api.get_upcoming())
+        
+    @ex(help='list todo items')
+    def todo(self):
+        ts = time.time()
+        pprint(self.app.api.get_todo_items())
+        te = time.time()
+        self.app.log.info(f'getting todo items took {(te - ts):.4}s')

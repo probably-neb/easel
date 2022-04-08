@@ -1,6 +1,5 @@
 from cement import App, TestApp, init_defaults
 from cement.core.exc import CaughtSignal
-from cement.ext import ext_colorlog
 from cement.utils import fs
 
 from .core.exc import easelError
@@ -16,26 +15,31 @@ from tinydb import TinyDB
 from BetterJSONStorage import BetterJSONStorage
 from pathlib import Path
 from .core.db_funcs import DBFuncs
+from .core.api import CanvasApi
 from cement.utils import fs
+from cement.ext.ext_colorlog import ColorLogHandler
 
 def extend_tinydb(app):
-    app.log.info('using tinydb to store course structure')
+    # app.log.info('using tinydb to store course structure')
     db_file = app.config.get('easel.yml', 'course_structure')
     
     # ensure that we expand the full path
     db_file = fs.abspath(db_file)
-    app.log.info('tinydb database file is: %s' % db_file)
+    # app.log.info('tinydb database file is: %s' % db_file)
     
     # ensure our parent directory exists
     db_dir = os.path.dirname(db_file)
     if not os.path.exists(db_dir):
         os.makedirs(db_dir)
 
-    app.extend('db', TinyDB(Path(db_file), indent=2, access_mode="r+", storage=BetterJSONStorage))
-    # app.extend('db', TinyDB(db_file, indent=2))
+    # app.extend('db', TinyDB(Path(db_file), access_mode="r+", storage=BetterJSONStorage))
+    app.extend('db', TinyDB(Path(db_file), access_mode="r+", indent=3))
 
 def extend_dbfuncs(app):
     app.extend('dbfuncs', DBFuncs(app))
+
+def extend_api(app):
+    app.extend('api', CanvasApi(app))
 
 def close_storage(app):
     app.db.storage.close()
@@ -47,6 +51,8 @@ class easel(App):
         hooks = [
                 ('post_setup',extend_tinydb),
                 ('post_setup', extend_dbfuncs),
+                ('post_setup', extend_api),
+                ('pre_close', close_storage)
         ]
         label = 'easel'
 
@@ -58,9 +64,9 @@ class easel(App):
 
         # load additional framework extensions
         extensions = [
+            'colorlog',
             'yaml',
             'jinja2',
-            'colorlog',
             'json'
         ]
 
@@ -84,35 +90,16 @@ class easel(App):
             Base,
             Courses,
             Assignments,
+            ColorLogHandler
         ]
-
-def extend_tinydb_test(app):
-    app.log.info('using tinydb to store course structure')
-    db_file = fs.abspath("./tests/test_db.json")
-    
-    # ensure that we expand the full path
-    db_file = fs.abspath(db_file)
-    app.log.info('tinydb database file is: %s' % db_file)
-    
-    # ensure our parent directory exists
-    db_dir = os.path.dirname(db_file)
-    if not os.path.exists(db_dir):
-        os.makedirs(db_dir)
-
-    app.extend('db', TinyDB(Path(db_file), indent=2, access_mode="r+", storage=BetterJSONStorage))
 
 class EaselTest(TestApp,easel):
     """A sub-class of easel that is better suited for testing."""
-
-    TEST_CONFIG_DEFAULTS = init_defaults('easel.yml')
-    TEST_CONFIG_DEFAULTS['easel.yml']['course_structure'] = fs.Tmp().dir
     class Meta:
         label = 'easel'
-        hooks = [
-                ('post_setup', extend_tinydb_test),
-                ('post_setup', extend_dbfuncs),
-                ('close_storage', close_storage)
-                ]
+
+        # could make hook for setting this
+        # CONFIG['easel.yml']['course_structure'] = fs.Tmp().file
 
 def main():
     with easel() as app:
@@ -139,7 +126,6 @@ def main():
             # Default Cement signals are SIGINT and SIGTERM, exit 0 (non-error)
             print('\n%s' % e)
             app.exit_code = 0
-
 
 if __name__ == '__main__':
     main()

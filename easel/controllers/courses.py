@@ -58,16 +58,18 @@ class Courses(Controller):
         except:
             ids = False
             names = False
+        courses = []
         if not ids and not names:
             print("Found Courses: ")
-            self._print_course_column("ID","NAME")
+            courses.append({'id' : 'ID','name' : 'NAME'})
         for name,id in courses_info:
             if ids:
                 print(id)
             elif names:
                 print(name)
             else:
-                self._print_course_column(id,name)
+                courses.append({"name" : name, "id" : id})
+        self.app.render({"courses" : courses}, "courses.jinja2")
 
     def _print_course_column(self, id, name):
         print(f"{' '*3} {id:<6} | {name}")
@@ -75,15 +77,20 @@ class Courses(Controller):
     @ex(help='update database')
     def update(self):
         start_time = time.time()
-        type_tables = asyncio.run(get_course_structure())
-        print(type_tables.keys())
-        # ctime = time.time()
-            # self.app.db.insert_multiple(item)
-        self.app.dbfuncs.store_tables(type_tables)
-        # etime = time.time()
-        # print(f"store took {(etime - ctime):.4}")
+        # import cProfile
+        # import pstats
+        # profile = cProfile.Profile()
+        # profile.enable()
+        # type_tables = asyncio.run(get_course_structure(*self.app.api.get_domain_header()))
+        # self.app.dbfuncs.store_tables(type_tables)
+        self.app.dbfuncs.update_db(["courses"])
+        # profile.disable()
+        # ps = pstats.Stats(profile).strip_dirs().sort_stats('cumtime').reverse_order()
+        # ps.print_stats()
+        # p.strip_dirs().sort_stats(pstats.SortKey.TIME).print_callers(.25).reverse_order().print_stats()
         end_time = time.time()
         self.app.log.info(f'Course Structure Update Success! Took {(end_time-start_time):.4} seconds')
+        # self.app.log.info(f'api took: {api:<8} | store took: {store}')
         self.list()
 
     @ex(

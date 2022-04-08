@@ -67,6 +67,7 @@ class Assignments(Controller):
         else: 
             groups = self.app.db.table("assignment_groups").all()
             for group in groups:
+                print(group['name'])
                 course_name = self.app.dbfuncs.get_course_name(group["course_id"])
                 longest = 0
                 assignments = []
@@ -76,7 +77,7 @@ class Assignments(Controller):
                 for assignment in group["assignments"]:
                     grade = ""
                     if not self.app.pargs.grades:
-                        grade = "(" + get_grade(assignment) + ")"
+                        grade = "(" + self.app.dbfuncs.get_grade(assignment) + ")"
                     assignments.append({"name" : assignment["name"], "grade" : grade, "position" : assignment["position"]})
                     if len(assignment["name"]) > longest:
                         longest = len(assignment["name"])
@@ -97,24 +98,3 @@ def print_assignment_group(group, group_name, course_name, position=1, longest=0
         print(f"  => {assignment['name']:<{longest}}\t{assignment['grade']:<}")
     print('-'*longest)
 
-
-def get_grade(assignment):
-    # The type of grading the assignment receives; one of:
-#'pass_fail', 'percent', 'letter_grade', 'gpa_scale', 'points'
-    grading_type = assignment["grading_type"]
-    if grading_type == "points": 
-        score,out_of = 0.0, assignment["points_possible"]
-        if out_of.is_integer():
-            out_of = int(out_of)
-        if assignment.get("submission") and assignment.get("submission").get("score"):
-            score = assignment["submission"]["score"]
-            if score.is_integer():
-                score = int(score)
-        else:
-            score = "-"
-        return str(score) + "/" + str(out_of)
-    else:
-        if assignment.get("submission"):
-            if assignment.get("submission").get("grade"):
-                return assignment["submission"]["grade"]
-    return "N/A"

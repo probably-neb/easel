@@ -1,2 +1,2 @@
-Found Courses:
-{% for item in courses %}  => {{ item.strip()+'\n' }}{% endfor %}
+{% for course in courses %} {{ course.id }} | {{ course.name }}
+{% endfor %}

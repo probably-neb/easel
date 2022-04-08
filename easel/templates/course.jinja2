@@ -1,0 +1,4 @@
+{% extends "base_course.jinja2" %}
+{% block name %}{{ course.name }}{% endblock %}{% block id %}{% if course.id is defined %}{{ ' | ' + course.id|string }}{% endif %} {% endblock %}
+	{% if course.start_at is defined %} Started At:    {{ course.start_at }} {% endif %} 
+	{% if course.start_at is defined %} Calendar Link: {{ course.calendar.ics }}  {% endif %} 

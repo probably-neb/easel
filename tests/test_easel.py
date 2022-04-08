@@ -1,13 +1,13 @@
-
 from pytest import raises
 from easel.main import EaselTest
+from conftest import tmp
 
 def test_easel():
     # test easel without any subcommands or arguments
     with EaselTest() as app:
         app.run()
         assert app.exit_code == 0
-
+        # app.db.storage.close()
 
 def test_easel_debug():
     # test that debug mode is functional
@@ -15,22 +15,46 @@ def test_easel_debug():
     with EaselTest(argv=argv) as app:
         app.run()
         assert app.debug is True
+        # app.close()
+        # app.db.storage.close()
 
+def test_extensions():
+    with EaselTest(argv=[]) as app:
+        app.run()
+        assert app.ext.list() is not None
+        app.log.info(app.ext.list())
+        # app.db.storage.close()
 
-def test_command1():
-    # test command1 without arguments
-    argv = ['command1']
+def test_api_requests():
+    # async with self._session.get(url="http://httpbin.org/headers") as r:
+    #         json_body = await r.json()
+    #         pprint(json_body)
+    #         assert json_body['headers']['Authorization'] == self.headers["Authorization"]
+    pass
+
+def test_update():
+    argv = ['-u']
     with EaselTest(argv=argv) as app:
         app.run()
-        data,output = app.last_rendered
-        assert data['foo'] == 'bar'
-        assert output.find('Foo => bar')
+        ids = []
+        for table in app.db.tables():
+            for doc in app.db.table(table).all():
+                if table == "pages":
+                    assert doc.get("url") is not None
+                    assert doc["url"] not in ids
+                    ids.append(doc["url"])
+                else:
+                    assert table != "pages"
+                    assert doc.get("id") is not None
+                    assert doc["id"] not in ids
+                    ids.append(doc["id"])
+                    if table != "courses":
+                        assert doc.get("course_id") is not None
+        # app.db.storage.close()
 
-
-    # test command1 with arguments
-    argv = ['command1', '--foo', 'not-bar']
-    with EaselTest(argv=argv) as app:
-        app.run()
-        data,output = app.last_rendered
-        assert data['foo'] == 'not-bar'
-        assert output.find('Foo => not-bar')
+# def test_assignments(tmp):
+#     argv = ['assignments', 'list']
+#     with EaselTest(argv=argv) as app:
+#         app.run()
+        
+#         app.db.storage.close()
