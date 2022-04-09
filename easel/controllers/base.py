@@ -9,6 +9,7 @@ from tinydb import Query
 import asyncio
 import time
 import os
+import webbrowser as browser
 
 VERSION_BANNER = """
 Canvas api cli app %s
@@ -51,7 +52,7 @@ class Base(Controller):
         if self.app.pargs.update:
             self.app.handler.resolve('controller', 'courses', setup=True).update()
         elif self.app.pargs.truncate:
-            os.remove(fs.abspath(self.app.config.get('easel.yml', 'course_structure')))
+            os.remove(fs.abspath(self.app.config.get('easel', 'course_structure')))
         else:
             self.app.args.print_help()
 
@@ -109,9 +110,42 @@ class Base(Controller):
     def upcoming(self):
         pprint(self.app.api.get_upcoming())
         
-    @ex(help='list todo items')
+    @ex(help='list todo items',
+        # arguments=[
+        #     ( [ '-l', '--link' ],
+        #       { 'action'  : 'store'} ),
+        #       ]
+        )
     def todo(self):
         ts = time.time()
         pprint(self.app.api.get_todo_items())
         te = time.time()
         self.app.log.info(f'getting todo items took {(te - ts):.4}s')
+
+    @ex(help="open links",
+        arguments=[
+            ( [ '-l', '--link' ],
+              { 'action'  : 'store',
+                'dest' : 'link'} ),
+            ( ['course'],
+                { 'action'  : 'store',
+                # 'dest' : 'course',
+                # 'required': 'True'} ),
+                }),
+              ]
+        )
+    def open(self):
+        #TODO course seaching
+        course = self.app.pargs.course
+        course_id = self.app.dbfuncs.search(type='courses', search_term=course, return_key='id')[0]
+        link_name = self.app.pargs.link
+        if link_name is None:
+            link_name = 'default'
+        course_data = self.app.db.table('courses').get(doc_id=course_id)
+        link=""
+        # pprint(course_data['links'])
+        if course_data.get('links').get(link_name):
+            link = course_data['links'][link_name]
+        if not link:
+            raise ValueError(f"No link of type: {link_name} in course {course}. You can add a link of this name to the course or try different search terms")
+        browser.open_new_tab(link)

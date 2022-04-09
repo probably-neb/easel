@@ -7,8 +7,8 @@ from .controllers.base import Base
 from .controllers.courses import Courses
 from .controllers.assignments import Assignments
 # configuration defaults
-CONFIG = init_defaults('easel.yml')
-CONFIG['easel.yml']['course_structure'] = '~/Dropbox/code/py/easel/course-structure.json'
+CONFIG = init_defaults('easel')
+CONFIG['easel']['course_structure'] = '~/Dropbox/code/py/easel/course-structure.json'
 
 import os
 from tinydb import TinyDB
@@ -21,7 +21,7 @@ from cement.ext.ext_colorlog import ColorLogHandler
 
 def extend_tinydb(app):
     # app.log.info('using tinydb to store course structure')
-    db_file = app.config.get('easel.yml', 'course_structure')
+    db_file = app.config.get('easel', 'course_structure')
     
     # ensure that we expand the full path
     db_file = fs.abspath(db_file)
@@ -90,7 +90,7 @@ class easel(App):
             Base,
             Courses,
             Assignments,
-            ColorLogHandler
+            ColorLogHandler,
         ]
 
 class EaselTest(TestApp,easel):

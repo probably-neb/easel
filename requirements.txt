@@ -1,9 +1,11 @@
 cement==3.0.6
+setuptools
 asyncio
 aiohttp
-aiofile
 jinja2
 pyyaml
 colorlog
 tinydb
 requests
+bs4
+BetterJSONStorage

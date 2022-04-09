@@ -1,10 +1,11 @@
-.PHONY: clean virtualenv test docker dist dist-upload
+.PHONY: clean virtualenv test docker dist dist-upload build-local
 
 clean:
 	find . -name '*.py[co]' -delete
 
 virtualenv:
 	virtualenv --prompt '|> easel <| ' env
+	env/bin/pip install -r requirements.txt
 	env/bin/pip install -r requirements-dev.txt
 	env/bin/python setup.py develop
 	@echo
@@ -18,6 +19,7 @@ test:
 		--cov-report=term \
 		--cov-report=html:coverage-report \
 		tests/
+
 
 profile:
 	python -m cProfile -o profile.txt -m easel.main -u

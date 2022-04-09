@@ -1,4 +1,3 @@
-
 from setuptools import setup, find_packages
 from easel.core.version import get_version
 

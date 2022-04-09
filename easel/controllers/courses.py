@@ -28,6 +28,10 @@ class Courses(Controller):
                 { 'help' : 'update course data',
                     'action'  : 'store_true',
                     'dest' : 'update' } ),
+                ( ['-c', '--course'],
+                {'help': 'specify which course',
+                'action' : 'store',
+                'dest': 'course'})
                 ]
 
     def _default(self):
@@ -83,7 +87,7 @@ class Courses(Controller):
         # profile.enable()
         # type_tables = asyncio.run(get_course_structure(*self.app.api.get_domain_header()))
         # self.app.dbfuncs.store_tables(type_tables)
-        self.app.dbfuncs.update_db(["courses"])
+        self.app.dbfuncs.update_db(types=["courses", "assignments"])
         # profile.disable()
         # ps = pstats.Stats(profile).strip_dirs().sort_stats('cumtime').reverse_order()
         # ps.print_stats()
@@ -155,3 +159,87 @@ class Courses(Controller):
                 print(f"Succesfully added nickname: \"{nickname}\" to course: {course}")
             else:
                 print(f"Failed to add nickname: \"{nickname}\" to course: {course}")
+
+
+    @ex(help="list, modify, or add links for the couse. If multiple options are provided only the first in the order list,add,rename,change-link will be executed",
+            arguments=[
+                (['--list'],
+                    {'action': 'store_true',
+                    'dest': 'list'}),
+                ([ '--add','-a'],
+                    {'action': 'store',
+                    'help':"--add [link name] [link]",
+                    'dest': 'add',
+                    'nargs':2,
+                    }),
+                ([ '--rename','-r'],
+                    {'action': 'store',
+                    'dest': 'rename',
+                    'help':"--rename [link name] [new link name]",
+                    'nargs':2
+                    }),
+                ([ '--remove','-rm'],
+                    {'action': 'store',
+                    'dest': 'remove',
+                    'help':"--remove [link name]",
+                    }),
+                ([ '--change-link','-c'],
+                    {'action': 'store',
+                    'dest': 'change',
+                    'help':"--change-link [link name] [new link]",
+                    'nargs':2
+                    }),
+                # (['--name', '-n'],
+                #     # ['name'],
+                #     {'action': 'store',
+                #         # 'dest': 'name',
+                #     'default':None,
+                #     # 'required':False
+                #     }),
+                # (['--link', '-l'],
+                #     # ['link'],
+                #     {'action': 'store',
+                #         # 'dest': 'link',
+                #     'default':None,
+                #     # 'required':False
+                #     }),
+                ])
+                
+    def links(self):
+        if not self.app.pargs.course:
+            print("No course Specified. Please use in the form 'easel courses -c [course name] links [args]")
+            return
+        course = self.app.dbfuncs.search(type='courses', search_term=self.app.pargs.course)[0]
+        list = self.app.pargs.list
+        add = self.app.pargs.add
+        rename = self.app.pargs.rename
+        remove = self.app.pargs.remove
+        change = self.app.pargs.change
+
+        if list or (not add and not rename and not remove and not change):
+            pprint(course.get('links'))
+            return
+        # if add and name and link:
+        if add:
+            name = add[0]
+            link = add[1]
+            course['links'][name] = link
+            print(f"link {name}: {link} added to course {course['name']}")
+        elif rename:
+            old_name = rename[0]
+            new_name = rename[1]
+            course['links'][new_name] = course['links'][old_name]
+            del course['links'][new_name]
+            print(f"link: {new_name} reold_named to: {old_name} reold_named for course {course['old_name']}")
+        elif remove:
+            del course['links'][remove]
+        elif change:
+            name = change[0]
+            new_link = change[1]
+            course['links'][name] = new_link
+            print(f"link: {name} changed to: {new_link} renamed for course {course['name']}")
+        else:
+            print("Two arguments required for this command")
+
+        self.app.db.table('courses').upsert(Document(course, doc_id=course['id']))
+        

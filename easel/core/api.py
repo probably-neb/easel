@@ -1,9 +1,6 @@
 from asyncio.events import get_running_loop 
 from cement import App
-import json
-import config
 import time
-import aiofile
 import aiohttp
 import asyncio
 from pprint import pprint
@@ -15,19 +12,24 @@ import hashlib
 from collections import OrderedDict
 from typing import Callable
 from tinydb.table import Document
+from tinydb import Query
+from bs4 import BeautifulSoup
 
 user_id = 0
 append_time = 0.0
 domain = None
 header = None
 
+def html_to_md(html):
+    return BeautifulSoup(html, features='html.parser').get_text('\n')
 
 # used to avoid passing session around, for organization
 class Requests:
-    def __init__(self, headers:dict={}, domain:str="", api_path:str="/api/v1/"):
+    def __init__(self, app, headers:dict={}, domain:str="", api_path:str="/api/v1/"):
         self.headers =headers
         self.domain = domain
         self.api_path = api_path
+        self.app = app
 
     async def __aenter__(self):
         self._session: aiohttp.ClientSession = aiohttp.ClientSession(base_url=self.domain, raise_for_status=True, headers=self.headers)
@@ -38,8 +40,33 @@ class Requests:
         param = {"per_page": 100, 'include': "favorites"} #,"syllabus_body","public_description","total_scores","current_grading_period_scores","grading_periods","term","course_progress","sections","storage_quota_used_mb","passback_status","favorites","teachers","observed_users","concluded"'}
         response: aiohttp.ClientResponse = await self._session.get(self.api_path + "courses", params=param)
         courses: list[dict] = await response.json()
+        for course in courses:
+            course['type'] = 'canvas'
         # courses = filter(lambda course: not course.get("is_favorite"), courses)
         return courses
+
+    async def get_assignments(self, course_id: int):
+        """gets pages from course course_id"""
+        params = {'include': '"score_statistics","submission", "assignments"'}
+        # params = {"include": "assignments"}
+        result: aiohttp.ClientResponse = await self._session.get(self.api_path + f"courses/{course_id}/assignment_groups",params=params)
+        assignment_groups = await result.json()
+
+        # why does canvas include copy of assignment in submission?
+        for group in assignment_groups:
+            for assignment in group['assignments']:
+                # change to submissions if downloading multiple submissions
+                assignment['course_id'] = course_id
+                del assignment['submission']['assignment']
+                html: str = assignment.get('description')
+                if html:
+                    assignment['description_md'] = html_to_md(html)
+                
+            group['course_id'] = course_id
+
+            self.app.db.table('assignments').upsert(Document((group), doc_id=group['id']))
+
+        return assignment_groups
 
     async def __aexit__(self, *err):
         await self._session.close()
@@ -61,8 +88,8 @@ class CanvasApi:
     
     @wrap_async
     #TODO: better name (called in dbfuncs)
-    async def sync_with_api(self, types: list):
-        async with Requests(headers=self.header, domain=self.domain) as api:
+    async def sync_with_api(self, types: list, ids:list[int]=[]):
+        async with Requests(headers=self.header, domain=self.domain,app=self.app) as api:
             # course_info:list = []
 
             # BLOCKING
@@ -78,9 +105,19 @@ class CanvasApi:
                             name = course.get(name_option)
                             if name is not None:
                                 names.append({'name' : name, 'type' : name_option})
-                        course['link'] = self.domain + f"/courses/{id}"
+                        #TODO: when adding links if 'links' is empty add whatever link as default
+                        course['links'] = {'default' : self.domain + f"/courses/{id}"}
                         course['names'] = names
                         self.app.db.table("courses").upsert(Document(course, doc_id=course["id"]))
+            if not ids:
+                ids = list(map(lambda doc: doc.doc_id, self.app.db.table('courses').search(Query().type == "canvas")))
+            tasks = []
+            if 'assignments' in types:
+                for id in ids:
+                    task = asyncio.create_task(api.get_assignments(id))
+                    tasks.append(task)
+            await asyncio.gather(*tasks)
+                # assignments: list[dict] = await api.get_assignments()
             # store list of course names by id in 
             # self.app.db.upsert(Document({'course_info': course_info},doc_id=2))
 
@@ -90,12 +127,11 @@ class CanvasApi:
 # The `ignore` and `ignore_permanently` URLs can be used to update the user's preferences on what items will be displayed. Performing a DELETE request against the `ignore` URL will hide that item from future todo item requests, until the item changes. Performing a DELETE request against the `ignore_permanently` URL will hide that item forever.
     def get_todo_items(self):
         items =  self.api_request('users/self/todo').json()
-        todo_list = {}
         for item in items:
             if item.get('assignment') is not None:
                 st = time.time()
                 if self.app.db:
-                    item['assignment']['description_text'] = self.html_to_text(item['assignment']['description'])
+                    item['assignment']['description_text'] = html_to_md(item['assignment']['description'])
                     self.app.db.table('assignments').upsert((Document({'description_text' : item['assignment']['description_text']}, doc_id=item['assignment']['id'])))
                 et = time.time()
                 self.app.log.info(f'text conversion took {(et - st):.4} seconds')
@@ -108,10 +144,10 @@ class CanvasApi:
             if item.get('assignment') is not None:
                 st = time.time()
                 if self.app.db:
-                    item['assignment']['description_text'] = self.html_to_text(item['assignment']['description'])
+                    item['assignment']['description_text'] = html_to_md(item['assignment']['description'])
                     self.app.db.table('assignments').upsert((Document({'description_text' : item['assignment']['description_text']}, doc_id=item['assignment']['id'])))
                 et = time.time()
-                self.app.log.info(f'text conversion took {(et - st):.4} seconds')
+                # self.app.log.info(f'text conversion took {(et - st):.4} seconds')
         return items
 
     def submit_assignment(self, course_id, assignment_id, path):
@@ -134,10 +170,6 @@ class CanvasApi:
             requests.get(url, headers={"Content-Lenght" : '0'}.update(self.header))
 
 
-    def html_to_text(self, html):
-        from bs4 import BeautifulSoup
-        return BeautifulSoup(html, features='html.parser').get_text('\n')
-
     def check_response(self, res):
         try: 
             res.raise_for_status()
@@ -159,13 +191,65 @@ class CanvasApi:
         if headers:
             header |= headers
         if not path.startswith("https://"):
-            url = self.domain + path
-        else:
-            url = path
-        response = requests.get(url, headers=header, params=param, allow_redirects=True)
+            path = self.domain + self.api_path + path
+        response = requests.get(path, headers=header, params=param, allow_redirects=True)
         self.check_response(response)
         return response
 
+#################################
+##                             ##
+##   ####   #     ###    #  #  ##
+##  #    #  #     #  #   #  #  ##
+##  #    #  #     #   #  #  #  ##
+##  #    #  #     #  #         ##
+##   ####   ##### ###    #  #  ##
+##                             ##
+#################################
+#################################
+##                             ##
+##   ####   #     ###    #  #  ##
+##  #    #  #     #  #   #  #  ##
+##  #    #  #     #   #  #  #  ##
+##  #    #  #     #  #         ##
+##   ####   ##### ###    #  #  ##
+##                             ##
+#################################
+#################################
+##                             ##
+##   ####   #     ###    #  #  ##
+##  #    #  #     #  #   #  #  ##
+##  #    #  #     #   #  #  #  ##
+##  #    #  #     #  #         ##
+##   ####   ##### ###    #  #  ##
+##                             ##
+#################################
+#################################
+##                             ##
+##   ####   #     ###    #  #  ##
+##  #    #  #     #  #   #  #  ##
+##  #    #  #     #   #  #  #  ##
+##  #    #  #     #  #         ##
+##   ####   ##### ###    #  #  ##
+##                             ##
+#################################
+#################################
+##                             ##
+##   ####   #     ###    #  #  ##
+##  #    #  #     #  #   #  #  ##
+##  #    #  #     #   #  #  #  ##
+##  #    #  #     #  #         ##
+##   ####   ##### ###    #  #  ##
+##                             ##
+#################################
+#################################
+##                             ##
+##   ####   #     ###    #  #  ##
+##  #    #  #     #  #   #  #  ##
+##  #    #  #     #   #  #  #  ##
+##  #    #  #     #  #         ##
+##   ####   ##### ###    #  #  ##
+##                             ##
+#################################
 async def list_of_dicts_to_dict(lst, key):
     """ converts list of dictionaries to a new dictionary with each dictionary as a sub dictionrary corresponding to the value of the given key
     ex. ex_list = [{"id" : 123},{"id" : 456}]
