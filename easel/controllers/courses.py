@@ -73,25 +73,23 @@ class Courses(Controller):
                 print(name)
             else:
                 courses.append({"name" : name, "id" : id})
-        self.app.render({"courses" : courses}, "courses.jinja2")
+        self.app.render({"courses" : courses}, "courses.mako")
 
     def _print_course_column(self, id, name):
         print(f"{' '*3} {id:<6} | {name}")
 
     @ex(help='update database')
     def update(self):
+        self.app.log.info("Beginning Course Structure Update")
         start_time = time.time()
         # import cProfile
         # import pstats
         # profile = cProfile.Profile()
         # profile.enable()
         # type_tables = asyncio.run(get_course_structure(*self.app.api.get_domain_header()))
-        # self.app.dbfuncs.store_tables(type_tables)
         self.app.dbfuncs.update_db(types=["courses", "assignments"])
         # profile.disable()
         # ps = pstats.Stats(profile).strip_dirs().sort_stats('cumtime').reverse_order()
-        # ps.print_stats()
-        # p.strip_dirs().sort_stats(pstats.SortKey.TIME).print_callers(.25).reverse_order().print_stats()
         end_time = time.time()
         self.app.log.info(f'Course Structure Update Success! Took {(end_time-start_time):.4} seconds')
         # self.app.log.info(f'api took: {api:<8} | store took: {store}')

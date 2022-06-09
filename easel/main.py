@@ -1,11 +1,16 @@
 from cement import App, TestApp, init_defaults
 from cement.core.exc import CaughtSignal
+from cement.core.output import OutputHandler
+from cement.core.template import TemplateHandler
 from cement.utils import fs
-
+from typing import Mapping
 from .core.exc import easelError
 from .controllers.base import Base
 from .controllers.courses import Courses
 from .controllers.assignments import Assignments
+import rich
+import mako
+from mako.template import Template
 # configuration defaults
 CONFIG = init_defaults('easel')
 CONFIG['easel']['course_structure'] = '~/Dropbox/code/py/easel/course-structure.json'
@@ -20,12 +25,10 @@ from cement.utils import fs
 from cement.ext.ext_colorlog import ColorLogHandler
 
 def extend_tinydb(app):
-    # app.log.info('using tinydb to store course structure')
     db_file = app.config.get('easel', 'course_structure')
     
     # ensure that we expand the full path
     db_file = fs.abspath(db_file)
-    # app.log.info('tinydb database file is: %s' % db_file)
     
     # ensure our parent directory exists
     db_dir = os.path.dirname(db_file)
@@ -34,6 +37,8 @@ def extend_tinydb(app):
 
     # app.extend('db', TinyDB(Path(db_file), access_mode="r+", storage=BetterJSONStorage))
     app.extend('db', TinyDB(Path(db_file), access_mode="r+", indent=3))
+    app.log.info('App extended with TinyDB: [%s]' % vars(app.db))
+    app.log.info('Database file is: %s' % db_file)
 
 def extend_dbfuncs(app):
     app.extend('dbfuncs', DBFuncs(app))
@@ -42,7 +47,41 @@ def extend_api(app):
     app.extend('api', CanvasApi(app))
 
 def close_storage(app):
+    app.log.info("Closing Storage")
     app.db.storage.close()
+
+class MakoTemplateHandler(TemplateHandler):
+    class Meta:
+        label = 'mako_template_handler'
+
+    def load(self, template_path: str):
+        return super().load(template_path)
+
+    def render(self, content:str, data:Mapping):
+        template = Template(content)
+        render = template.render(data)
+        print(render)
+        return render
+
+class MakoOutputHandler(OutputHandler):
+    class Meta:
+        label = 'mako_output_handler'
+
+    def render(self, data: Mapping, *args, **kwargs) -> str:
+        # print(rich.inspect(args), rich.inspect(kwargs))
+        print(rich.inspect(self.app.template))
+        if isinstance(kwargs.get('template'), str):
+            template = str(kwargs.get('template'))
+        else:
+            print("ruh roh", rich.inspect(kwargs))
+            return ""
+        template_contents = self.app.template.load(template)
+        render = self.app.template.render(template_contents,data)
+        console = rich.console.Console()
+        with console.capture() as capture:
+            console.print(render)
+        output = capture.get()
+        return output
 
 class easel(App):
     """Easel primary application."""
@@ -54,6 +93,7 @@ class easel(App):
                 ('post_setup', extend_api),
                 ('pre_close', close_storage)
         ]
+
         label = 'easel'
 
         # configuration defaults
@@ -83,7 +123,8 @@ class easel(App):
         log_handler = 'colorlog'
 
         # set the output handler
-        output_handler = 'jinja2'
+        output_handler = 'mako_output_handler'
+        template_handler =  'mako_template_handler'
 
         # register handlers
         handlers = [
@@ -91,6 +132,8 @@ class easel(App):
             Courses,
             Assignments,
             ColorLogHandler,
+            MakoOutputHandler,
+            MakoTemplateHandler,
         ]
 
 class EaselTest(TestApp,easel):
@@ -98,13 +141,11 @@ class EaselTest(TestApp,easel):
     class Meta:
         label = 'easel'
 
-        # could make hook for setting this
-        # CONFIG['easel.yml']['course_structure'] = fs.Tmp().file
-
 def main():
     with easel() as app:
         try:
             app.run()
+            # print(app._meta.template_module.)
 
         except AssertionError as e:
             print('AssertionError > %s' % e.args[0])

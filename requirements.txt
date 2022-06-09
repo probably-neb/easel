@@ -9,3 +9,5 @@ tinydb
 requests
 bs4
 BetterJSONStorage
+rich
+mako

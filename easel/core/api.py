@@ -14,6 +14,8 @@ from typing import Callable
 from tinydb.table import Document
 from tinydb import Query
 from bs4 import BeautifulSoup
+from rich.progress import track
+import rich 
 
 user_id = 0
 append_time = 0.0
@@ -32,28 +34,58 @@ class Requests:
         self.app = app
 
     async def __aenter__(self):
+        self.loop = asyncio.get_event_loop()
         self._session: aiohttp.ClientSession = aiohttp.ClientSession(base_url=self.domain, raise_for_status=True, headers=self.headers)
         return self
 
     async def get_courses(self):
         """gets courses that are favorited"""
-        param = {"per_page": 100, 'include': "favorites"} #,"syllabus_body","public_description","total_scores","current_grading_period_scores","grading_periods","term","course_progress","sections","storage_quota_used_mb","passback_status","favorites","teachers","observed_users","concluded"'}
-        response: aiohttp.ClientResponse = await self._session.get(self.api_path + "courses", params=param)
+        params = {"per_page": 100, "include": "favorites"} #,"syllabus_body","public_description","total_scores","current_grading_period_scores","grading_periods","term","course_progress","sections","storage_quota_used_mb","passback_status","favorites","teachers","observed_users","concluded"'}
+        course_task = asyncio.create_task(self._session.get(self.api_path + "courses", params=params))
+        response: aiohttp.ClientResponse = await course_task
         courses: list[dict] = await response.json()
-        for course in courses:
-            course['type'] = 'canvas'
-        # courses = filter(lambda course: not course.get("is_favorite"), courses)
-        return courses
+        favorite_courses = []
+        for course in track(sequence=courses, description="Updating Courses..."):
+            if course.get("is_favorite"):
+                course['type'] = 'canvas'
+                id = course['id']
+                names = []
+                # keys that canvas stores different names under
+                for name_option in ["name", "friendly_name", "course_code"]:
+                    name = course.get(name_option)
+                    if name is not None:
+                        names.append({'name' : name, 'type' : name_option})
+                #TODO: when adding links if 'links' is empty add whatever link as default
+                course['links'] = {'default' : self.domain + f"/courses/{id}"}
+                course['names'] = names
+                self.app.log.info(f"Found Favorite Course: {id}: {names}")
+                # store = asyncio.to_thread(self.app.db.table("courses").upsert, Document(course, doc_id=course["id"]))
+                # await store
+                self.app.db.table("courses").upsert, Document(course, doc_id=course["id"])
+                favorite_courses.append(course)
+        return favorite_courses
 
-    async def get_assignments(self, course_id: int):
+    async def get_assignment_group_assignments(self, course_id: int, group_id: int):
+        params = {'include': '"score_statistics","submission"'}
+        task = asyncio.create_task(self._session.get(self.api_path + f"courses/{course_id}/assignment_groups/{group_id}/assignments", params=params))
+        result: aiohttp.ClientResponse = await task
+        group_assignments = await result.json()
+        return group_assignments
+
+    async def get_assignment_groups(self, course_id: int):
         """gets pages from course course_id"""
         params = {'include': '"score_statistics","submission", "assignments"'}
         # params = {"include": "assignments"}
-        result: aiohttp.ClientResponse = await self._session.get(self.api_path + f"courses/{course_id}/assignment_groups",params=params)
+        task = asyncio.create_task(self._session.get(self.api_path + f"courses/{course_id}/assignment_groups",params=params))
+        result: aiohttp.ClientResponse = await task
         assignment_groups = await result.json()
 
         # why does canvas include copy of assignment in submission?
-        for group in assignment_groups:
+        for group in track(assignment_groups, description=f"Updating Assignments for course with ID: {course_id}"):
+            self.app.log.info(f"Syncing Assignment Group '{group['name']}' in course: {course_id}")
+            if not group.get('assignments'):
+                group_task = asyncio.create_task(self.get_assignment_group_assignments(course_id=course_id, group_id=group['id']))
+                group['assignments'] = await group_task
             for assignment in group['assignments']:
                 # change to submissions if downloading multiple submissions
                 assignment['course_id'] = course_id
@@ -61,9 +93,13 @@ class Requests:
                 html: str = assignment.get('description')
                 if html:
                     assignment['description_md'] = html_to_md(html)
+                del assignment['secure_params']
                 
             group['course_id'] = course_id
 
+            #This probably isn't safe
+            # store = asyncio.run_in_executor(self.app.db.table('assignments').upsert, Document((group), doc_id=group['id']))
+            # await store
             self.app.db.table('assignments').upsert(Document((group), doc_id=group['id']))
 
         return assignment_groups
@@ -96,26 +132,14 @@ class CanvasApi:
             # if we should update courses or we need course ids for other updates
             if "courses" in types or not len(self.app.db.table("courses")) > 0:
                 courses: list[dict] = await api.get_courses()
-                for course in courses:
-                    if course.get("is_favorite"):
-                        id = course['id']
-                        names = []
-                        # keys that canvas stores different names under
-                        for name_option in ["name", "friendly_name", "course_code"]:
-                            name = course.get(name_option)
-                            if name is not None:
-                                names.append({'name' : name, 'type' : name_option})
-                        #TODO: when adding links if 'links' is empty add whatever link as default
-                        course['links'] = {'default' : self.domain + f"/courses/{id}"}
-                        course['names'] = names
-                        self.app.db.table("courses").upsert(Document(course, doc_id=course["id"]))
             if not ids:
                 ids = list(map(lambda doc: doc.doc_id, self.app.db.table('courses').search(Query().type == "canvas")))
             tasks = []
             if 'assignments' in types:
                 for id in ids:
-                    task = asyncio.create_task(api.get_assignments(id))
+                    task: asyncio.Task = asyncio.create_task(api.get_assignment_groups(id))
                     tasks.append(task)
+
             await asyncio.gather(*tasks)
                 # assignments: list[dict] = await api.get_assignments()
             # store list of course names by id in 

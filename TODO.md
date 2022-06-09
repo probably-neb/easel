@@ -1,10 +1,8 @@
 ### TODO
 	####RN
-	1. jinja2 templates
+	1. make templates using rich (make template handler)
 	2. move from assignment_groups too assignments
 		- can include assignment_group info when requesting assignments?
-	2. listing upcoming assignments **[WITH API REQUEST]**
-		- updating db when listing upcoming
 	4. searching for item
 		-pre: storing course names/ids in default table
 			- assignments
@@ -14,9 +12,17 @@
 	3. downloading assignment attachments
 		- viewing assignment descriptions / downloading
 	4. submitting assignments
-	5. opening item in browser when searched 
-	5. displaying assignment descriptions by converting html to markdown and rendering markdown to file
-	6. directories for assignments and courses, that can be used for downloading and submitting
+  5. opening links 
+    5. opening item in browser when searched 
+  7. convert hardcoded type strings (i.e. "courses", "modules"...) to CanvasType enum
+  8. updated methods for syncing types for:
+    - modules
+    - items
+    - pages
+    - quizzes
+    - files
+    - folders
+	6. directories for assignments and courses, that can be used for downloading and submitting (in config)
 
 #### Config
 	- [ ] path for config file
@@ -34,7 +40,6 @@
 		- [ ] support for instructors and admins side
 #### Database
 	- [ ] online vs local requests?
-	- [x] store courses with course_id as doc id
 	- [ ] store names for courses in _default table as {courses : {key:id, names:[]}}
 	### local storage
 	- [ ] storing local paths in db

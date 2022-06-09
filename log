@@ -1,0 +1,258 @@
+2022-04-09 19:31:03,769 (INFO) easel : text conversion took 0.0009692 seconds
+2022-04-09 19:31:03,770 (INFO) easel : text conversion took 0.0009072 seconds
+2022-04-09 19:31:03,771 (INFO) easel : text conversion took 0.0007939 seconds
+2022-04-09 19:31:03,772 (INFO) easel : text conversion took 0.001001 seconds
+2022-04-09 19:31:03,791 (INFO) easel : getting todo items took 0.5187s
+2022-04-09 19:35:22,931 (INFO) easel : text conversion took 0.001052 seconds
+2022-04-09 19:35:22,932 (INFO) easel : text conversion took 0.0008934 seconds
+2022-04-09 19:35:22,933 (INFO) easel : text conversion took 0.0008297 seconds
+2022-04-09 19:35:22,934 (INFO) easel : text conversion took 0.000865 seconds
+2022-04-09 20:35:37,963 (INFO) easel : text conversion took 0.001157 seconds
+2022-04-09 20:35:37,964 (INFO) easel : text conversion took 0.0008354 seconds
+2022-04-09 20:35:37,965 (INFO) easel : text conversion took 0.0008297 seconds
+2022-04-09 20:35:37,966 (INFO) easel : text conversion took 0.0007768 seconds
+2022-04-09 23:03:31,300 (INFO) easel : text conversion took 0.0008514 seconds
+2022-04-09 23:03:31,302 (INFO) easel : text conversion took 0.000879 seconds
+2022-04-09 23:03:31,302 (INFO) easel : text conversion took 0.0008063 seconds
+2022-04-09 23:03:31,303 (INFO) easel : text conversion took 0.0008545 seconds
+2022-04-09 23:04:53,554 (INFO) easel : text conversion took 0.001019 seconds
+2022-04-09 23:04:53,555 (INFO) easel : text conversion took 0.0008483 seconds
+2022-04-09 23:04:53,556 (INFO) easel : text conversion took 0.0008245 seconds
+2022-04-09 23:04:53,557 (INFO) easel : text conversion took 0.0008087 seconds
+2022-04-09 23:08:57,771 (INFO) easel : text conversion took 0.000967 seconds
+2022-04-09 23:08:57,772 (INFO) easel : text conversion took 0.0008807 seconds
+2022-04-09 23:08:57,773 (INFO) easel : text conversion took 0.0007966 seconds
+2022-04-09 23:08:57,774 (INFO) easel : text conversion took 0.0008392 seconds
+2022-04-09 23:24:03,299 (INFO) easel : Course Structure Update Success! Took 1.562 seconds
+2022-04-09 23:49:07,360 (INFO) easel : Course Structure Update Success! Took 1.466 seconds
+2022-04-09 23:52:30,946 (INFO) easel : Course Structure Update Success! Took 1.495 seconds
+2022-04-10 09:20:55,806 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f4acc581780>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f4acc581780>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f4acc581780>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f4acc581780>>}}]
+2022-04-10 09:20:55,806 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 09:21:19,769 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f3454185990>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f3454185990>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f3454185990>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f3454185990>>}}]
+2022-04-10 09:21:19,769 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 09:21:19,774 (INFO) easel : Beginning Course Structure Update
+2022-04-10 09:21:21,395 (INFO) easel : Course Structure Update Success! Took 1.621 seconds
+2022-04-10 09:21:21,398 (INFO) easel : Beginning Startup
+2022-04-10 09:21:21,399 (INFO) easel : Closing Storage
+2022-04-10 09:22:30,826 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7efe03779630>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7efe03779630>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7efe03779630>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7efe03779630>>}}]
+2022-04-10 09:22:30,826 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 09:22:30,826 (INFO) easel : Beginning Startup
+2022-04-10 09:22:30,831 (INFO) easel : Closing Storage
+2022-04-10 09:49:59,977 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f900dd657b0>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f900dd657b0>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f900dd657b0>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f900dd657b0>>}}]
+2022-04-10 09:49:59,977 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 09:49:59,983 (INFO) easel : Closing Storage
+2022-04-10 09:51:42,871 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f68793859c0>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f68793859c0>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f68793859c0>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f68793859c0>>}}]
+2022-04-10 09:51:42,871 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 09:51:42,876 (INFO) easel : Beginning Course Structure Update
+2022-04-10 10:02:19,720 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f611ff7d8a0>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f611ff7d8a0>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f611ff7d8a0>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f611ff7d8a0>>}}]
+2022-04-10 10:02:19,720 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 10:02:19,725 (INFO) easel : Beginning Course Structure Update
+2022-04-10 10:02:20,050 (INFO) easel : Found Favorite Course: 79619: [{'name': 'CHEM-124-31-2224 - General Chemistry for Physical Science and Engineering I', 'type': 'name'}, {'name': 'CHEM-124-31-2224', 'type': 'course_code'}]
+2022-04-10 10:02:20,058 (INFO) easel : Found Favorite Course: 78051: [{'name': 'COMS-101-06-2224 - Public Speaking', 'type': 'name'}, {'name': 'COMS-101-06-2224', 'type': 'course_code'}]
+2022-04-10 10:02:20,068 (INFO) easel : Found Favorite Course: 78663: [{'name': 'ES-254-01-2224 - Introduction to African American Studies', 'type': 'name'}, {'name': 'ES-254-01-2224', 'type': 'course_code'}]
+2022-04-10 10:04:02,981 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f2a7f36da50>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f2a7f36da50>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f2a7f36da50>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f2a7f36da50>>}}]
+2022-04-10 10:04:02,981 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 10:04:02,986 (INFO) easel : Beginning Course Structure Update
+2022-04-10 10:04:03,358 (INFO) easel : Found Favorite Course: 79619: [{'name': 'CHEM-124-31-2224 - General Chemistry for Physical Science and Engineering I', 'type': 'name'}, {'name': 'CHEM-124-31-2224', 'type': 'course_code'}]
+2022-04-10 10:04:03,369 (INFO) easel : Found Favorite Course: 78051: [{'name': 'COMS-101-06-2224 - Public Speaking', 'type': 'name'}, {'name': 'COMS-101-06-2224', 'type': 'course_code'}]
+2022-04-10 10:04:03,375 (INFO) easel : Found Favorite Course: 78663: [{'name': 'ES-254-01-2224 - Introduction to African American Studies', 'type': 'name'}, {'name': 'ES-254-01-2224', 'type': 'course_code'}]
+2022-04-10 10:04:03,394 (INFO) easel : Course Structure Update Success! Took 0.4076 seconds
+2022-04-10 10:04:03,397 (INFO) easel : Closing Storage
+2022-04-10 10:09:03,551 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7fc220b7d8a0>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7fc220b7d8a0>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7fc220b7d8a0>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7fc220b7d8a0>>}}]
+2022-04-10 10:09:03,552 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 10:09:03,556 (INFO) easel : Beginning Course Structure Update
+2022-04-10 10:09:03,911 (INFO) easel : Found Favorite Course: 79619: [{'name': 'CHEM-124-31-2224 - General Chemistry for Physical Science and Engineering I', 'type': 'name'}, {'name': 'CHEM-124-31-2224', 'type': 'course_code'}]
+2022-04-10 10:09:03,921 (INFO) easel : Found Favorite Course: 78051: [{'name': 'COMS-101-06-2224 - Public Speaking', 'type': 'name'}, {'name': 'COMS-101-06-2224', 'type': 'course_code'}]
+2022-04-10 10:09:03,928 (INFO) easel : Found Favorite Course: 78663: [{'name': 'ES-254-01-2224 - Introduction to African American Studies', 'type': 'name'}, {'name': 'ES-254-01-2224', 'type': 'course_code'}]
+2022-04-10 10:09:03,946 (INFO) easel : Course Structure Update Success! Took 0.3901 seconds
+2022-04-10 10:09:03,950 (INFO) easel : Closing Storage
+2022-04-10 10:13:15,991 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7fc372d79d50>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7fc372d79d50>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7fc372d79d50>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7fc372d79d50>>}}]
+2022-04-10 10:13:15,991 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 10:13:15,996 (INFO) easel : Beginning Course Structure Update
+2022-04-10 10:13:16,305 (INFO) easel : Found Favorite Course: 79619: [{'name': 'CHEM-124-31-2224 - General Chemistry for Physical Science and Engineering I', 'type': 'name'}, {'name': 'CHEM-124-31-2224', 'type': 'course_code'}]
+2022-04-10 10:13:16,316 (INFO) easel : Found Favorite Course: 78051: [{'name': 'COMS-101-06-2224 - Public Speaking', 'type': 'name'}, {'name': 'COMS-101-06-2224', 'type': 'course_code'}]
+2022-04-10 10:13:16,323 (INFO) easel : Found Favorite Course: 78663: [{'name': 'ES-254-01-2224 - Introduction to African American Studies', 'type': 'name'}, {'name': 'ES-254-01-2224', 'type': 'course_code'}]
+2022-04-10 10:13:16,348 (INFO) easel : Course Structure Update Success! Took 0.3517 seconds
+2022-04-10 10:13:16,352 (INFO) easel : Closing Storage
+2022-04-10 10:20:14,130 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f2b34181c00>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f2b34181c00>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f2b34181c00>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f2b34181c00>>}}]
+2022-04-10 10:20:14,130 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 10:20:14,135 (INFO) easel : Beginning Course Structure Update
+2022-04-10 10:20:14,427 (INFO) easel : Found Favorite Course: 79619: [{'name': 'CHEM-124-31-2224 - General Chemistry for Physical Science and Engineering I', 'type': 'name'}, {'name': 'CHEM-124-31-2224', 'type': 'course_code'}]
+2022-04-10 10:20:14,437 (INFO) easel : Found Favorite Course: 78051: [{'name': 'COMS-101-06-2224 - Public Speaking', 'type': 'name'}, {'name': 'COMS-101-06-2224', 'type': 'course_code'}]
+2022-04-10 10:20:14,443 (INFO) easel : Found Favorite Course: 78663: [{'name': 'ES-254-01-2224 - Introduction to African American Studies', 'type': 'name'}, {'name': 'ES-254-01-2224', 'type': 'course_code'}]
+2022-04-10 10:20:14,466 (INFO) easel : Course Structure Update Success! Took 0.3306 seconds
+2022-04-10 10:20:14,470 (INFO) easel : Closing Storage
+2022-04-10 10:24:36,034 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7fddd657d660>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7fddd657d660>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7fddd657d660>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7fddd657d660>>}}]
+2022-04-10 10:24:36,035 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 10:24:36,039 (INFO) easel : Beginning Course Structure Update
+2022-04-10 10:24:36,385 (INFO) easel : Found Favorite Course: 79619: [{'name': 'CHEM-124-31-2224 - General Chemistry for Physical Science and Engineering I', 'type': 'name'}, {'name': 'CHEM-124-31-2224', 'type': 'course_code'}]
+2022-04-10 10:24:36,396 (INFO) easel : Found Favorite Course: 78051: [{'name': 'COMS-101-06-2224 - Public Speaking', 'type': 'name'}, {'name': 'COMS-101-06-2224', 'type': 'course_code'}]
+2022-04-10 10:24:36,403 (INFO) easel : Found Favorite Course: 78663: [{'name': 'ES-254-01-2224 - Introduction to African American Studies', 'type': 'name'}, {'name': 'ES-254-01-2224', 'type': 'course_code'}]
+2022-04-10 10:24:36,425 (INFO) easel : Course Structure Update Success! Took 0.3859 seconds
+2022-04-10 10:24:36,429 (INFO) easel : Closing Storage
+2022-04-10 10:29:29,729 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f0ddf5698a0>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f0ddf5698a0>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f0ddf5698a0>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f0ddf5698a0>>}}]
+2022-04-10 10:29:29,729 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 10:29:29,734 (INFO) easel : Beginning Course Structure Update
+2022-04-10 10:29:30,008 (INFO) easel : Found Favorite Course: 79619: [{'name': 'CHEM-124-31-2224 - General Chemistry for Physical Science and Engineering I', 'type': 'name'}, {'name': 'CHEM-124-31-2224', 'type': 'course_code'}]
+2022-04-10 10:29:30,019 (INFO) easel : Found Favorite Course: 78051: [{'name': 'COMS-101-06-2224 - Public Speaking', 'type': 'name'}, {'name': 'COMS-101-06-2224', 'type': 'course_code'}]
+2022-04-10 10:29:30,026 (INFO) easel : Found Favorite Course: 78663: [{'name': 'ES-254-01-2224 - Introduction to African American Studies', 'type': 'name'}, {'name': 'ES-254-01-2224', 'type': 'course_code'}]
+2022-04-10 10:29:30,046 (INFO) easel : Course Structure Update Success! Took 0.3123 seconds
+2022-04-10 10:29:30,050 (INFO) easel : Closing Storage
+2022-04-10 10:37:47,449 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f373f37d510>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f373f37d510>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f373f37d510>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f373f37d510>>}}]
+2022-04-10 10:37:47,449 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 10:37:47,453 (INFO) easel : Beginning Course Structure Update
+2022-04-10 10:37:47,812 (INFO) easel : Found Favorite Course: 79619: [{'name': 'CHEM-124-31-2224 - General Chemistry for Physical Science and Engineering I', 'type': 'name'}, {'name': 'CHEM-124-31-2224', 'type': 'course_code'}]
+2022-04-10 10:37:47,820 (INFO) easel : Found Favorite Course: 78051: [{'name': 'COMS-101-06-2224 - Public Speaking', 'type': 'name'}, {'name': 'COMS-101-06-2224', 'type': 'course_code'}]
+2022-04-10 10:37:47,827 (INFO) easel : Found Favorite Course: 78663: [{'name': 'ES-254-01-2224 - Introduction to African American Studies', 'type': 'name'}, {'name': 'ES-254-01-2224', 'type': 'course_code'}]
+2022-04-10 10:37:47,848 (INFO) easel : Course Structure Update Success! Took 0.394 seconds
+2022-04-10 10:37:47,851 (INFO) easel : Closing Storage
+2022-04-10 10:42:00,243 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7ff17d985c30>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7ff17d985c30>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7ff17d985c30>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7ff17d985c30>>}}]
+2022-04-10 10:42:00,243 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 10:42:00,248 (INFO) easel : Beginning Course Structure Update
+2022-04-10 10:42:01,135 (INFO) easel : Found Favorite Course: 79619: [{'name': 'CHEM-124-31-2224 - General Chemistry for Physical Science and Engineering I', 'type': 'name'}, {'name': 'CHEM-124-31-2224', 'type': 'course_code'}]
+2022-04-10 10:42:01,144 (INFO) easel : Found Favorite Course: 78051: [{'name': 'COMS-101-06-2224 - Public Speaking', 'type': 'name'}, {'name': 'COMS-101-06-2224', 'type': 'course_code'}]
+2022-04-10 10:42:01,153 (INFO) easel : Found Favorite Course: 78663: [{'name': 'ES-254-01-2224 - Introduction to African American Studies', 'type': 'name'}, {'name': 'ES-254-01-2224', 'type': 'course_code'}]
+2022-04-10 10:42:01,964 (INFO) easel : Syncing Assignment Group 'Assignments' in course: 79619
+2022-04-10 10:42:02,844 (INFO) easel : Syncing Assignment Group 'Assignments' in course: 78663
+2022-04-10 10:42:03,188 (INFO) easel : Syncing Assignment Group 'Film Reviews' in course: 78663
+2022-04-10 10:42:03,195 (INFO) easel : Syncing Assignment Group 'Critical Essays' in course: 78663
+2022-04-10 10:42:03,201 (INFO) easel : Syncing Assignment Group 'Imported Assignments' in course: 78663
+2022-04-10 10:42:04,090 (INFO) easel : Syncing Assignment Group 'Imported Assignments' in course: 78051
+2022-04-10 10:42:04,116 (INFO) easel : Course Structure Update Success! Took 3.868 seconds
+2022-04-10 10:42:04,120 (INFO) easel : Closing Storage
+2022-04-10 10:42:58,516 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f723d9697b0>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f723d9697b0>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f723d9697b0>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f723d9697b0>>}}]
+2022-04-10 10:42:58,516 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 10:42:58,520 (INFO) easel : Beginning Course Structure Update
+2022-04-10 10:42:58,796 (INFO) easel : Found Favorite Course: 79619: [{'name': 'CHEM-124-31-2224 - General Chemistry for Physical Science and Engineering I', 'type': 'name'}, {'name': 'CHEM-124-31-2224', 'type': 'course_code'}]
+2022-04-10 10:42:58,805 (INFO) easel : Found Favorite Course: 78051: [{'name': 'COMS-101-06-2224 - Public Speaking', 'type': 'name'}, {'name': 'COMS-101-06-2224', 'type': 'course_code'}]
+2022-04-10 10:42:58,816 (INFO) easel : Found Favorite Course: 78663: [{'name': 'ES-254-01-2224 - Introduction to African American Studies', 'type': 'name'}, {'name': 'ES-254-01-2224', 'type': 'course_code'}]
+2022-04-10 10:46:28,915 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7efdfeb89c00>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7efdfeb89c00>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7efdfeb89c00>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7efdfeb89c00>>}}]
+2022-04-10 10:46:28,915 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 10:46:28,920 (INFO) easel : Beginning Course Structure Update
+2022-04-10 10:46:29,276 (INFO) easel : Found Favorite Course: 79619: [{'name': 'CHEM-124-31-2224 - General Chemistry for Physical Science and Engineering I', 'type': 'name'}, {'name': 'CHEM-124-31-2224', 'type': 'course_code'}]
+2022-04-10 10:46:29,284 (INFO) easel : Found Favorite Course: 78051: [{'name': 'COMS-101-06-2224 - Public Speaking', 'type': 'name'}, {'name': 'COMS-101-06-2224', 'type': 'course_code'}]
+2022-04-10 10:46:29,294 (INFO) easel : Found Favorite Course: 78663: [{'name': 'ES-254-01-2224 - Introduction to African American Studies', 'type': 'name'}, {'name': 'ES-254-01-2224', 'type': 'course_code'}]
+2022-04-10 10:46:29,426 (INFO) easel : Syncing Assignment Group 'Assignments' in course: 79619
+2022-04-10 10:46:29,904 (INFO) easel : Syncing Assignment Group 'Assignments' in course: 78663
+2022-04-10 10:46:30,064 (INFO) easel : Syncing Assignment Group 'Film Reviews' in course: 78663
+2022-04-10 10:46:30,075 (INFO) easel : Syncing Assignment Group 'Critical Essays' in course: 78663
+2022-04-10 10:46:30,082 (INFO) easel : Syncing Assignment Group 'Imported Assignments' in course: 78663
+2022-04-10 10:46:30,600 (INFO) easel : Syncing Assignment Group 'Imported Assignments' in course: 78051
+2022-04-10 10:46:30,626 (INFO) easel : Course Structure Update Success! Took 1.706 seconds
+2022-04-10 10:46:30,630 (INFO) easel : Closing Storage
+2022-04-10 10:47:57,595 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f58a215ba90>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f58a215ba90>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f58a215ba90>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f58a215ba90>>}}]
+2022-04-10 10:47:57,595 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 10:47:57,600 (INFO) easel : Beginning Course Structure Update
+2022-04-10 10:47:57,918 (INFO) easel : Found Favorite Course: 79619: [{'name': 'CHEM-124-31-2224 - General Chemistry for Physical Science and Engineering I', 'type': 'name'}, {'name': 'CHEM-124-31-2224', 'type': 'course_code'}]
+2022-04-10 10:47:57,927 (INFO) easel : Found Favorite Course: 78051: [{'name': 'COMS-101-06-2224 - Public Speaking', 'type': 'name'}, {'name': 'COMS-101-06-2224', 'type': 'course_code'}]
+2022-04-10 10:47:57,933 (INFO) easel : Found Favorite Course: 78663: [{'name': 'ES-254-01-2224 - Introduction to African American Studies', 'type': 'name'}, {'name': 'ES-254-01-2224', 'type': 'course_code'}]
+2022-04-10 10:47:58,076 (INFO) easel : Syncing Assignment Group 'Assignments' in course: 79619
+2022-04-10 10:47:58,576 (INFO) easel : Syncing Assignment Group 'Assignments' in course: 78663
+2022-04-10 10:47:58,721 (INFO) easel : Syncing Assignment Group 'Film Reviews' in course: 78663
+2022-04-10 10:47:58,729 (INFO) easel : Syncing Assignment Group 'Critical Essays' in course: 78663
+2022-04-10 10:47:58,736 (INFO) easel : Syncing Assignment Group 'Imported Assignments' in course: 78663
+2022-04-10 10:47:59,067 (INFO) easel : Syncing Assignment Group 'Imported Assignments' in course: 78051
+2022-04-10 10:47:59,094 (INFO) easel : Course Structure Update Success! Took 1.493 seconds
+2022-04-10 10:47:59,097 (INFO) easel : Closing Storage
+2022-04-10 10:48:19,011 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f8c2cf71900>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f8c2cf71900>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f8c2cf71900>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f8c2cf71900>>}}]
+2022-04-10 10:48:19,011 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 10:48:19,016 (INFO) easel : Beginning Course Structure Update
+2022-04-10 10:48:19,297 (INFO) easel : Found Favorite Course: 79619: [{'name': 'CHEM-124-31-2224 - General Chemistry for Physical Science and Engineering I', 'type': 'name'}, {'name': 'CHEM-124-31-2224', 'type': 'course_code'}]
+2022-04-10 10:48:19,307 (INFO) easel : Found Favorite Course: 78051: [{'name': 'COMS-101-06-2224 - Public Speaking', 'type': 'name'}, {'name': 'COMS-101-06-2224', 'type': 'course_code'}]
+2022-04-10 10:48:19,317 (INFO) easel : Found Favorite Course: 78663: [{'name': 'ES-254-01-2224 - Introduction to African American Studies', 'type': 'name'}, {'name': 'ES-254-01-2224', 'type': 'course_code'}]
+2022-04-10 10:48:19,454 (INFO) easel : Syncing Assignment Group 'Assignments' in course: 79619
+2022-04-10 10:48:19,918 (INFO) easel : Syncing Assignment Group 'Assignments' in course: 78663
+2022-04-10 10:48:20,059 (INFO) easel : Syncing Assignment Group 'Film Reviews' in course: 78663
+2022-04-10 10:48:20,065 (INFO) easel : Syncing Assignment Group 'Critical Essays' in course: 78663
+2022-04-10 10:48:20,072 (INFO) easel : Syncing Assignment Group 'Imported Assignments' in course: 78663
+2022-04-10 10:48:20,613 (INFO) easel : Syncing Assignment Group 'Imported Assignments' in course: 78051
+2022-04-10 10:48:20,636 (INFO) easel : Course Structure Update Success! Took 1.62 seconds
+2022-04-10 10:48:20,640 (INFO) easel : Closing Storage
+2022-04-10 11:28:42,853 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f0f131952a0>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f0f131952a0>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f0f131952a0>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f0f131952a0>>}}]
+2022-04-10 11:28:42,853 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 11:28:42,873 (INFO) easel : Beginning Course Structure Update
+2022-04-10 11:28:43,202 (INFO) easel : Found Favorite Course: 79619: [{'name': 'CHEM-124-31-2224 - General Chemistry for Physical Science and Engineering I', 'type': 'name'}, {'name': 'CHEM-124-31-2224', 'type': 'course_code'}]
+2022-04-10 11:28:43,203 (INFO) easel : Found Favorite Course: 78051: [{'name': 'COMS-101-06-2224 - Public Speaking', 'type': 'name'}, {'name': 'COMS-101-06-2224', 'type': 'course_code'}]
+2022-04-10 11:28:43,203 (INFO) easel : Found Favorite Course: 78663: [{'name': 'ES-254-01-2224 - Introduction to African American Studies', 'type': 'name'}, {'name': 'ES-254-01-2224', 'type': 'course_code'}]
+2022-04-10 11:28:43,338 (INFO) easel : Syncing Assignment Group 'Assignments' in course: 79619
+2022-04-10 11:28:43,778 (INFO) easel : Syncing Assignment Group 'Assignments' in course: 78663
+2022-04-10 11:28:43,934 (INFO) easel : Syncing Assignment Group 'Film Reviews' in course: 78663
+2022-04-10 11:28:43,955 (INFO) easel : Syncing Assignment Group 'Critical Essays' in course: 78663
+2022-04-10 11:28:43,976 (INFO) easel : Syncing Assignment Group 'Imported Assignments' in course: 78663
+2022-04-10 11:28:44,399 (INFO) easel : Syncing Assignment Group 'Imported Assignments' in course: 78051
+2022-04-10 11:28:44,481 (INFO) easel : Course Structure Update Success! Took 1.608 seconds
+2022-04-10 11:28:44,495 (INFO) easel : Closing Storage
+2022-04-10 14:27:59,509 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f199e9753f0>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f199e9753f0>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f199e9753f0>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f199e9753f0>>}}]
+2022-04-10 14:27:59,509 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 14:29:01,042 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7fcd53569300>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7fcd53569300>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7fcd53569300>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7fcd53569300>>}}]
+2022-04-10 14:29:01,042 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 14:29:01,049 (INFO) easel : Closing Storage
+2022-04-10 16:44:57,738 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f0403963ee0>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f0403963ee0>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f0403963ee0>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f0403963ee0>>}}]
+2022-04-10 16:44:57,738 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 16:52:36,269 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f461197aaa0>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f461197aaa0>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f461197aaa0>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f461197aaa0>>}}]
+2022-04-10 16:52:36,269 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 16:53:39,623 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f41b056f6a0>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f41b056f6a0>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f41b056f6a0>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f41b056f6a0>>}}]
+2022-04-10 16:53:39,623 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 17:04:45,620 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f2fd8163f70>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f2fd8163f70>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f2fd8163f70>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f2fd8163f70>>}}]
+2022-04-10 17:04:45,620 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 17:18:26,317 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f96f5d53f10>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f96f5d53f10>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f96f5d53f10>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f96f5d53f10>>}}]
+2022-04-10 17:18:26,317 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 17:18:26,323 (INFO) easel : Closing Storage
+2022-04-10 17:22:21,340 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f7d72f5aad0>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f7d72f5aad0>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f7d72f5aad0>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f7d72f5aad0>>}}]
+2022-04-10 17:22:21,340 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 17:23:29,617 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7faf2bd76a10>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7faf2bd76a10>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7faf2bd76a10>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7faf2bd76a10>>}}]
+2022-04-10 17:23:29,618 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 17:24:02,605 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f24e3f42f20>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f24e3f42f20>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f24e3f42f20>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f24e3f42f20>>}}]
+2022-04-10 17:24:02,605 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 17:47:23,463 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7fc5dcf98760>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7fc5dcf98760>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7fc5dcf98760>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7fc5dcf98760>>}}]
+2022-04-10 17:47:23,463 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 17:47:23,470 (INFO) easel : Closing Storage
+2022-04-10 17:49:22,875 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f586536eb00>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f586536eb00>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f586536eb00>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f586536eb00>>}}]
+2022-04-10 17:49:22,875 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 17:49:22,883 (INFO) easel : Closing Storage
+2022-04-10 17:50:05,505 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f543cd7e7d0>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f543cd7e7d0>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f543cd7e7d0>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f543cd7e7d0>>}}]
+2022-04-10 17:50:05,505 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 17:50:05,511 (INFO) easel : Closing Storage
+2022-04-10 17:50:45,505 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f20671800a0>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f20671800a0>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f20671800a0>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f20671800a0>>}}]
+2022-04-10 17:50:45,506 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 17:51:41,430 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f4dd8786950>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f4dd8786950>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f4dd8786950>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f4dd8786950>>}}]
+2022-04-10 17:51:41,430 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 17:53:09,050 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f592ed5feb0>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f592ed5feb0>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f592ed5feb0>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f592ed5feb0>>}}]
+2022-04-10 17:53:09,050 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 17:55:26,880 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f96b976b760>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f96b976b760>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f96b976b760>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f96b976b760>>}}]
+2022-04-10 17:55:26,880 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 17:55:26,893 (INFO) easel : Closing Storage
+2022-04-10 17:56:25,811 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f3e84194130>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f3e84194130>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f3e84194130>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f3e84194130>>}}]
+2022-04-10 17:56:25,811 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 17:56:25,825 (INFO) easel : Closing Storage
+2022-04-10 17:58:03,150 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f250a976770>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f250a976770>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f250a976770>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f250a976770>>}}]
+2022-04-10 17:58:03,150 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 18:00:53,660 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f8e36398520>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f8e36398520>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f8e36398520>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f8e36398520>>}}]
+2022-04-10 18:00:53,660 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 18:04:38,969 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f6fcd16ff10>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f6fcd16ff10>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f6fcd16ff10>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f6fcd16ff10>>}}]
+2022-04-10 18:04:38,969 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 18:04:38,982 (INFO) easel : Closing Storage
+2022-04-10 18:10:17,770 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7fb06c786680>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7fb06c786680>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7fb06c786680>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7fb06c786680>>}}]
+2022-04-10 18:10:17,770 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 18:10:17,784 (INFO) easel : Closing Storage
+2022-04-10 18:11:37,621 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f600c37a650>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f600c37a650>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f600c37a650>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f600c37a650>>}}]
+2022-04-10 18:11:37,621 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 18:12:59,508 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f62569903a0>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f62569903a0>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f62569903a0>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f62569903a0>>}}]
+2022-04-10 18:12:59,508 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 18:15:20,423 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f9f9a16bb80>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f9f9a16bb80>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f9f9a16bb80>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f9f9a16bb80>>}}]
+2022-04-10 18:15:20,423 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 18:16:23,769 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f10def98460>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f10def98460>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f10def98460>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f10def98460>>}}]
+2022-04-10 18:16:23,770 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 18:18:20,289 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7ff1ab39c100>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7ff1ab39c100>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7ff1ab39c100>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7ff1ab39c100>>}}]
+2022-04-10 18:18:20,290 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-10 20:20:34,404 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f0af6f6ea40>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f0af6f6ea40>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f0af6f6ea40>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f0af6f6ea40>>}}]
+2022-04-10 20:20:34,404 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-11 10:28:52,474 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7fd0b6598100>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7fd0b6598100>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7fd0b6598100>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7fd0b6598100>>}}]
+2022-04-11 10:28:52,474 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-11 12:52:24,182 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f017c16fe80>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f017c16fe80>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f017c16fe80>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f017c16fe80>>}}]
+2022-04-11 12:52:24,182 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-18 08:13:13,234 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7ff6ac398460>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7ff6ac398460>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7ff6ac398460>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7ff6ac398460>>}}]
+2022-04-18 08:13:13,235 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-18 08:13:29,854 (INFO) easel : App extended with TinyDB: [{'_storage': <tinydb.storages.JSONStorage object at 0x7f7e22398130>, '_opened': True, '_tables': {'_default': <Table name='_default', total=0, storage=<tinydb.storages.JSONStorage object at 0x7f7e22398130>>, 'courses': <Table name='courses', total=4, storage=<tinydb.storages.JSONStorage object at 0x7f7e22398130>>, 'assignments': <Table name='assignments', total=6, storage=<tinydb.storages.JSONStorage object at 0x7f7e22398130>>}}]
+2022-04-18 08:13:29,854 (INFO) easel : Database file is: /home/neb/Dropbox/code/py/easel/course-structure.json
+2022-04-18 08:13:29,884 (INFO) easel : Closing Storage

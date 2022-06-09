@@ -52,6 +52,7 @@ class Base(Controller):
         if self.app.pargs.update:
             self.app.handler.resolve('controller', 'courses', setup=True).update()
         elif self.app.pargs.truncate:
+            self.app.log.warning("Removing Database File")
             os.remove(fs.abspath(self.app.config.get('easel', 'course_structure')))
         else:
             self.app.args.print_help()
@@ -64,7 +65,7 @@ class Base(Controller):
     def list(self):
         with self.app.db as db:
             for table in db.tables():
-                pprint(db.table(table))
+                pprint(db.table(table).all())
 
     @ex(help='get an example of a document item',
         arguments = [
@@ -111,16 +112,13 @@ class Base(Controller):
         pprint(self.app.api.get_upcoming())
         
     @ex(help='list todo items',
-        # arguments=[
-        #     ( [ '-l', '--link' ],
-        #       { 'action'  : 'store'} ),
-        #       ]
         )
     def todo(self):
-        ts = time.time()
-        pprint(self.app.api.get_todo_items())
-        te = time.time()
-        self.app.log.info(f'getting todo items took {(te - ts):.4}s')
+        from rich.pretty import pprint as rich_pprint
+        self.app.log.info("Getting TODO's")
+        rich_pprint(self.app.api.get_todo_items())
+        self.app.log.info("Got TODO's")
+        # self.app.log.info(f'getting todo items took {(te - ts):.4}s', to_console=False)
 
     @ex(help="open links",
         arguments=[
