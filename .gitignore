@@ -103,6 +103,8 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+#personal data
 config/easel.conf
 config/easel.json
 config/easel.yml
@@ -110,3 +112,5 @@ course-structure.json
 easel.json
 easelstructure.json
 cement.link
+
+codegen/monkeytype*
