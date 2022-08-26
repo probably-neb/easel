@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 import enum
 import requests
 from collections import namedtuple
-from parse_model_comments import camelToSnake
+from parse_model_comments import camel_to_snake
 # from parse_model_comments import main as get_table_objects
 # from parse_model_comments import template_parsed_models as render_table_objects
 from declarations import *
@@ -60,30 +60,23 @@ def get_object_fields(obj_def: Tag) -> List[ObjectField]:
             description_lines.append(line)
         match = re.search(OBJ_FIELD_LINE_RE, line)
         if match:
-            field_dict = {
-                'description' : ''.join(description_lines),
-                'name' : match.group(1).strip(),
-                'example' : match.group(2).strip(),
-                'type_': ""
-                }
             field = ObjectField()
-            for key, value in field_dict.items():
-                if value is not None and value != "":
-                    setattr(field, key, value)
+            field.description = ''.join(description_lines)
+            field.name = match.group(1).strip()
+            field.example = match.group(2).strip()
             fields.append(field)
             description_lines.clear()
     return fields
 
-
 def parse_objects(obj_defs: ResultSet) -> List[ObjectDefinition]:
     objects: list[ObjectDefinition] = []
     for obj_def in obj_defs:
-        obj_def_dict = {
-            'name' : get_object_name(obj_def),
-            'name_snake' : camelToSnake(get_object_name(obj_def)), 
-            'fields' : get_object_fields(obj_def)
-            }
-        obj = ObjectDefinition(**obj_def_dict)
+        obj = ObjectDefinition()
+        obj.name = get_object_name(obj_def)
+        obj.fields = get_object_fields(obj_def)
+        if not obj.is_table:
+            # see documentation in add_id_field function for why this is necessary
+            obj.add_id_field()
         objects.append(obj)
 
     return objects

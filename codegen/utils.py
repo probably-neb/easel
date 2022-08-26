@@ -14,7 +14,7 @@ def pluralize(word: str) -> str:
 _underscorer1 = re.compile(r'(.)([A-Z][a-z]+)')
 _underscorer2 = re.compile(r'([a-z0-9])([A-Z])')
 
-def camelToSnake(s: str) -> str:
+def camel_to_snake(s: str) -> str:
     """
     Convert camel-case to snake-case in python.
     e.g.: CamelCase -> snake_case

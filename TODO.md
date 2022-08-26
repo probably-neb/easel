@@ -1,47 +1,29 @@
 ### TODO
-	####RN
-	1. make templates using rich (make template handler)
-	2. move from assignment_groups too assignments
+
+#### Scripts
+	1. move from assignment_groups too assignments
 		- can include assignment_group info when requesting assignments?
-	4. searching for item
-		-pre: storing course names/ids in default table
-			- assignments
-			- courses
-			- pages
-			- modules
+	2. searching for item
 	3. downloading assignment attachments
 		- viewing assignment descriptions / downloading
 	4. submitting assignments
-  5. opening links 
-    5. opening item in browser when searched 
-  7. convert hardcoded type strings (i.e. "courses", "modules"...) to CanvasType enum
-  8. updated methods for syncing types for:
-    - modules
-    - items
-    - pages
-    - quizzes
-    - files
-    - folders
+    5. opening item in browser (if possible) (opening links)
 	6. directories for assignments and courses, that can be used for downloading and submitting (in config)
-
-#### Config
-	- [ ] path for config file
-	- [ ] auto gen course specific configs?
-#### Canvas API interactions
 	- [ ] preferring db or api request
 			- [ ] per command (i.e. for get submission will check api request first)
 			- [ ] on api request if different than db update db
-	- [ ] consolidate get_{item} commands, user better ~taste~ (most if not all can be accomplished with get(courses/course_id/{type})) 
-			- [ ] how to make per type differences (like adding "id" to pages or something) with good ~taste~
 	- [ ] submitting files
 	- [ ] getting all submissions not just most recent (maybe optional)
 	###### *Far out future*
 		- [ ] graphql
 		- [ ] support for instructors and admins side
+#### Config
+	- [ ] path for config file
+	- [ ] auto gen course specific configs?
 #### Database
+	- [ ] sql array type using json.dumps/loads 
+		- make it take sql type as param just for documentation of what types it is storing (maybe enforce as well by trying to cast items to python equivalent type)
 	- [ ] online vs local requests?
-	- [ ] store names for courses in _default table as {courses : {key:id, names:[]}}
-	### local storage
 	- [ ] storing local paths in db
 	- [ ] easel mv for changing path of item
 	- [ ] command to get item from name/id
@@ -75,10 +57,9 @@
 #### Documentation
 	- [ ] make docs lol
 	- [ ] how to test api/db requests? just fail when no internet/db?
-	- [ ] use actual db file or make a new one?
 #### General
-	- [ ] plugins: 
+	- [ ] scripts: 
 		- [ ] ability to dynamically load plugins into cement (maybe use generate command)
 		- [ ] run plugins as command
 		- [ ] like "download_midterm2.py" which can then be run by easel and executed
-	- [ ] "watchdog" extension config option for when assignments get moved etc
+	- [ ] "watchdog" extension config option for when assignments get moved etc (daemon to watch files and update db)

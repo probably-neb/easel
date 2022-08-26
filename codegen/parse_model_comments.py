@@ -16,7 +16,7 @@ from typing import List, Union, Dict, Optional, Any
 from declarations import *
 from io import TextIOWrapper
 
-from utils import camelToSnake, snake_to_camel
+from utils import camel_to_snake, snake_to_camel
 
 # _capitalizer = re.compile(r'_(.)')
 
@@ -112,10 +112,13 @@ def store_jsoned_models(store_file, jsoned_models):
 def format_ref(ref: str) -> str:
     return f'$ref -> {ref}'
 
+def format_foreign_key(foreign_table_name: str) -> str:
+    return f'Integer, ForiegnKey(\'{foreign_table_name}.id\')'
+
 def format_array_type(items: Optional[Union[Dict[str, str], Dict[str, Union[str, Dict[str, str]]]]]) -> Optional[str]:
     if not items:
         return None
-    item_type = TYPEMAP[items.get('type')]
+    item_type = SQL_TYPEMAP[items.get('type')]
     if item_type == "None" and items.get('$ref'):
         item_type = format_ref(items.get('$ref'))
 
@@ -124,39 +127,65 @@ def format_array_type(items: Optional[Union[Dict[str, str], Dict[str, Union[str,
         item_type = f"{format_array_type(items['items'])}"
     return f"Array : {item_type}"
 
-def parse_field(field_name: str, jsoned_field: Dict[str, Any], jsoned_model_name: str) -> ObjectField:
-        field = ObjectField()
-        field.name = field_name.replace('-','_')
-        field.documented_type = jsoned_field.get('type')
-        mapped_type = TYPEMAP[field.documented_type]
-        if mapped_type == "None" and jsoned_field.get('$ref'):
-            field.type_ = format_ref(jsoned_field['$ref'])
+def parse_type(items: Dict[str, Any], mn, fn) -> FieldInit:
+    type_ = items.get('type')
+
+    # array type
+    if type_ == "array":
+        _items = items.get('items')
+        if _items is None:
+            print(f"WARNING: field {fn} of item {mn} has type \"Array\" but no specified item types\n", items)
+        # array of objects
         else:
-            field.type_ = mapped_type
-        field.description = get_ifnn_or_empty(jsoned_field.get('description'))
-        field.example = get_ifnn_or_empty(jsoned_field.get('example'))
-        if type(field.example) != str:
-            # when the fields type is an integer it is stored as an integer type 
-            # but we need it as a string
-            field.example = str(field.example)
-        field.primary_key = field.name == "id"
+            items =_items
+            return ListJsonFieldInit(item_type_=parse_type(items, mn, fn))
+    elif type_ == "object":
+        if not items.get('key') and not items.get('value'):
+            if not items.get('$ref'):
+                print(f"WARNING: field {fn} of item {mn} has type \"Object\" but no referenced object type\n", items)
+                return RefFieldInit(type_="Unknown")
+            # $ref is handled later. avoid repeating code here by not handling the case it is not None
+        else:
+            return DictJsonFieldInit(key_type_=parse_type(items['key'], mn, fn), value_type_=parse_type(items['value'], mn, fn))
+    # new if to catch case where object and $ref are defined
+    if items.get('$ref'):
+        # $ref used as replacement for type
+        return RefFieldInit(type_=items.get('$ref'))
+    else:
+    # type_ is None or type_ is basic type
+        return FieldInit(type_=type_)
+
+def parse_field(field_name: str, jsoned_field: Dict[str, Any], jsoned_model_name: str) -> ObjectField:
+    field = ObjectField()
+    field.name = field_name.replace('-','_')
+
+    if jsoned_field.get('allowableValues'):
+        enum_name = (snake_to_camel(field.name)) + "Enum"
+        enum_values = jsoned_field['allowableValues']['values']
+        field.option_enum = OptionEnum(enum_name, enum_values)
+    else:
+        # setting option enum sets init as EnumFieldInit automatically
         field.option_enum = None
+        field.init = parse_type(jsoned_field, jsoned_model_name, field_name)
 
-        if jsoned_field.get('allowableValues'):
-            field.option_enum = OptionEnum()
-            field.option_enum.name = snake_to_camel(field.name) + "AllowedValues"
-            field.option_enum.name.capitalize()
-            field.option_enum.values = jsoned_field['allowableValues']['values']
+        # if mapped_type == "None" and jsoned_field.get('$ref'):
+        #     field.type_ = format_foreign_key(camel_to_snake(jsoned_field['$ref']))
+        # elif mapped_type == "Array":
+        #     items = jsoned_field.get('items')
+        #     array_type = format_array_type(items)
+        #     field.type_ = array_type
+        #     if field.type_ is None:
+        #         print(f"WARNING: field {field.name} of item {jsoned_model_name} has type \"Array\" but no specified item types\n", jsoned_field)
+        # else:
+        #     field.type_ = mapped_type
 
-        if mapped_type == "Array":
-            items = jsoned_field.get('items')
-            array_type = format_array_type(items)
-            field.type_ = array_type
-            if field.type_ is None:
-                print(f"WARNING: field {field.name} of item {jsoned_model_name} has type \"Array\" but no specified item types\n", jsoned_field)
-        elif field.option_enum is not None:
-            field.type_ = "Enum"
-        return field
+    field.description = get_ifnn_or_empty(jsoned_field.get('description'))
+    field.example = get_ifnn_or_empty(jsoned_field.get('example'))
+    if type(field.example) != str:
+        # when the fields type is an integer it is stored as an integer type 
+        # but we need it as a string
+        field.example = str(field.example)
+    return field
     
 def parse_fields(properties_dict: Dict[str, Any], model_name: str) -> List[Union[Any, ObjectField]]:
     parsed_fields = []
@@ -169,8 +198,6 @@ def parse_model(jsoned_model: Dict[str, Any]) -> ObjectDefinition:
     model = ObjectDefinition()
 
     model.name = jsoned_model.get('id')
-    model.name_snake = camelToSnake(model.name)
-
     model.fields = parse_fields(jsoned_model.get('properties'), model.name)
     model.description = jsoned_model.get('description')
     

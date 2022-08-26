@@ -1,22 +1,29 @@
-@dataclass
-class Scope:
-    resource: String
-    """The resource the scope is associated with"""
-    resource_name: String
-    """The localized resource name"""
-    controller: String
-    """The controller the scope is associated to"""
-    action: String
-    """The controller action the scope is associated to"""
-    verb: String
-    """The HTTP verb for the scope"""
-    scope: String
-    """The identifier for the scope"""
+
+class Scope(Base):
+    __tablename__ = 'scope'
+    resource = Column(String)
+    """The resource the scope is associated with 
+        Example: courses"""
+    resource_name = Column(String)
+    """The localized resource name 
+        Example: Courses"""
+    controller = Column(String)
+    """The controller the scope is associated to 
+        Example: courses"""
+    action = Column(String)
+    """The controller action the scope is associated to 
+        Example: index"""
+    verb = Column(String)
+    """The HTTP verb for the scope 
+        Example: GET"""
+    scope = Column(String)
+    """The identifier for the scope 
+        Example: url:GET|/api/v1/courses"""
 
 
 class CalendarEvent(Base):
     __tablename__ = 'calendar_event'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The ID of the calendar event 
         Example: 234"""
     title = Column(String)
@@ -61,7 +68,8 @@ class CalendarEvent(Base):
     child_events_count = Column(Integer)
     """The number of child_events. See child_events (and parent_event_id) 
         Example: None"""
-    child_events = Column(Array : Integer)
+    child_events = Column(JsonObject)
+"""List[int]"""
     """Included by default, but may be excluded (see include[] option). If this is a time slot (see the Appointment Groups API) this will be a list of any reservations. If this is a course-level event, this will be a list of section-level events (if any) 
         Example: None"""
     url = Column(String)
@@ -119,7 +127,7 @@ class CalendarEvent(Base):
 
 class AssignmentEvent(Base):
     __tablename__ = 'assignment_event'
-    id = Column(String, primary_key=True)
+    id = Column(String)
     """A synthetic ID for the assignment 
         Example: assignment_987"""
     title = Column(String)
@@ -137,9 +145,9 @@ class AssignmentEvent(Base):
     context_code = Column(String)
     """the context code of the (course) calendar this assignment belongs to 
         Example: course_123"""
-    workflowStateAllowedValues = enum.Enum('workflowStateAllowedValues', ['published', 'deleted'])
+    workflowStateEnum = enum.Enum('workflowStateEnum', ['published', 'deleted'])
     """Enum for the allowed values of the workflow_state field"""
-    workflow_state = Column(Enum(workflowStateAllowedValues))
+    workflow_state = Column(Enum(workflowStateEnum))
     """Current state of the assignment ('published' or 'deleted') 
         Example: published"""
     url = Column(String)
@@ -160,49 +168,63 @@ class AssignmentEvent(Base):
     updated_at = Column(DateTime)
     """When the assignment was last updated 
         Example: 2012-07-12T10:55:20-06:00"""
-    assignment = Column($ref -> Assignment)
+    assignment = relationship('Assignment')
     """The full assignment JSON data (See the Assignments API) 
         Example: None"""
-    assignment_overrides = Column($ref -> AssignmentOverride)
+    assignment_overrides = relationship('AssignmentOverride')
     """The list of AssignmentOverrides that apply to this event (See the Assignments API). This information is useful for determining which students or sections this assignment-due event applies to. 
         Example: None"""
     important_dates = Column(Boolean)
     """Boolean indicating whether this has important dates. 
         Example: True"""
 
-@dataclass
-class ProvisionalGrade:
-    provisional_grade_id: Integer
-    """The identifier for the provisional grade"""
-    score: Integer
-    """The numeric score"""
-    grade: String
-    """The grade"""
-    grade_matches_current_submission: Boolean
-    """Whether the grade was applied to the most current submission (false if the student resubmitted after grading)"""
-    graded_at: DateTime
-    """When the grade was given"""
-    final: Boolean
-    """Whether this is the 'final' provisional grade created by the moderator"""
-    speedgrader_url: String
-    """A link to view this provisional grade in SpeedGrader™"""
 
-@dataclass
-class FileAttachment:
-    content_type: String
-    """No Description Provided"""
-    url: String
-    """No Description Provided"""
-    filename: String
-    """No Description Provided"""
-    display_name: String
-    """No Description Provided"""
+class ProvisionalGrade(Base):
+    __tablename__ = 'provisional_grade'
+    provisional_grade_id = Column(Integer)
+    """The identifier for the provisional grade 
+        Example: 23"""
+    score = Column(Integer)
+    """The numeric score 
+        Example: 90"""
+    grade = Column(String)
+    """The grade 
+        Example: A-"""
+    grade_matches_current_submission = Column(Boolean)
+    """Whether the grade was applied to the most current submission (false if the student resubmitted after grading) 
+        Example: True"""
+    graded_at = Column(DateTime)
+    """When the grade was given 
+        Example: 2015-11-01T00:03:21-06:00"""
+    final = Column(Boolean)
+    """Whether this is the 'final' provisional grade created by the moderator 
+        Example: None"""
+    speedgrader_url = Column(String)
+    """A link to view this provisional grade in SpeedGrader™ 
+        Example: http://www.example.com/courses/123/gradebook/speed_grader?..."""
+
+
+class FileAttachment(Base):
+    """A file attachment"""
+    __tablename__ = 'file_attachment'
+    content_type = Column(String)
+    """None 
+        Example: unknown/unknown"""
+    url = Column(String)
+    """None 
+        Example: http://www.example.com/courses/1/files/1/download"""
+    filename = Column(String)
+    """None 
+        Example: content.txt"""
+    display_name = Column(String)
+    """None 
+        Example: content.txt"""
 
 
 class DiscussionTopic(Base):
     """A discussion topic"""
     __tablename__ = 'discussion_topic'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The ID of this topic. 
         Example: 1"""
     title = Column(String)
@@ -229,9 +251,9 @@ class DiscussionTopic(Base):
     discussion_subentry_count = Column(Integer)
     """The count of entries in the topic. 
         Example: None"""
-    readStateAllowedValues = enum.Enum('readStateAllowedValues', ['read', 'unread'])
+    readStateEnum = enum.Enum('readStateEnum', ['read', 'unread'])
     """Enum for the allowed values of the read_state field"""
-    read_state = Column(Enum(readStateAllowedValues))
+    read_state = Column(Enum(readStateEnum))
     """The read_state of the topic for the current user, 'read' or 'unread'. 
         Example: read"""
     unread_count = Column(Integer)
@@ -240,9 +262,9 @@ class DiscussionTopic(Base):
     subscribed = Column(Boolean)
     """Whether or not the current user is subscribed to this topic. 
         Example: True"""
-    subscriptionHoldAllowedValues = enum.Enum('subscriptionHoldAllowedValues', ['initial_post_required', 'not_in_group_set', 'not_in_group', 'topic_is_announcement'])
+    subscriptionHoldEnum = enum.Enum('subscriptionHoldEnum', ['initial_post_required', 'not_in_group_set', 'not_in_group', 'topic_is_announcement'])
     """Enum for the allowed values of the subscription_hold field"""
-    subscription_hold = Column(Enum(subscriptionHoldAllowedValues))
+    subscription_hold = Column(Enum(subscriptionHoldEnum))
     """(Optional) Why the user cannot subscribe to this topic. Only one reason will be returned even if multiple apply. Can be one of: 'initial_post_required': The user must post a reply first; 'not_in_group_set': The user is not in the group set for this graded group discussion; 'not_in_group': The user is not in this topic's group; 'topic_is_announcement': This topic is an announcement 
         Example: not_in_group_set"""
     assignment_id = Column(Integer)
@@ -266,7 +288,7 @@ class DiscussionTopic(Base):
     locked_for_user = Column(Boolean)
     """Whether or not this is locked for the user. 
         Example: True"""
-    lock_info = Column($ref -> LockInfo)
+    lock_info = relationship('LockInfo')
     """(Optional) Information for the user about the lock. Present when locked_for_user is true. 
         Example: None"""
     lock_explanation = Column(String)
@@ -275,10 +297,12 @@ class DiscussionTopic(Base):
     user_name = Column(String)
     """The username of the topic creator. 
         Example: User Name"""
-    topic_children = Column(Array : Integer)
+    topic_children = Column(JsonObject)
+"""List[int]"""
     """DEPRECATED An array of topic_ids for the group discussions the user is a part of. 
         Example: [5, 7, 10]"""
-    group_topic_children = Column(Array : PickleType)
+    group_topic_children = Column(JsonObject)
+"""List[Unknown]"""
     """An array of group discussions the user is a part of. Fields include: id, group_id 
         Example: [{'id': 5, 'group_id': 1}, {'id': 7, 'group_id': 5}, {'id': 10, 'group_id': 4}]"""
     root_topic_id = Column(Integer)
@@ -287,18 +311,20 @@ class DiscussionTopic(Base):
     podcast_url = Column(String)
     """If the topic is a podcast topic this is the feed url for the current user. 
         Example: /feeds/topics/1/enrollment_1XAcepje4u228rt4mi7Z1oFbRpn3RAkTzuXIGOPe.rss"""
-    discussionTypeAllowedValues = enum.Enum('discussionTypeAllowedValues', ['side_comment', 'threaded'])
+    discussionTypeEnum = enum.Enum('discussionTypeEnum', ['side_comment', 'threaded'])
     """Enum for the allowed values of the discussion_type field"""
-    discussion_type = Column(Enum(discussionTypeAllowedValues))
+    discussion_type = Column(Enum(discussionTypeEnum))
     """The type of discussion. Values are 'side_comment', for discussions that only allow one level of nested comments, and 'threaded' for fully threaded discussions. 
         Example: side_comment"""
     group_category_id = Column(Integer)
     """The unique identifier of the group category if the topic is a group discussion, otherwise null. 
         Example: None"""
-    attachments = Column(Array : $ref -> FileAttachment)
+    attachments = Column(JsonObject)
+"""List[FileAttachment]"""
     """Array of file attachments. 
         Example: None"""
-    permissions = Column(PickleType)
+    permissions = Column(JsonObject)
+"""Dict[str, bool]"""
     """The current user's permissions on this topic. 
         Example: {'attach': True}"""
     allow_rating = Column(Boolean)
@@ -311,12 +337,15 @@ class DiscussionTopic(Base):
     """Whether or not entries should be sorted by rating. 
         Example: True"""
 
-@dataclass
-class GradingSchemeEntry:
-    name: String
-    """The name for an entry value within a GradingStandard that describes the range of the value"""
-    value: Integer
-    """The value for the name of the entry within a GradingStandard.  The entry represents the lower bound of the range for the entry. This range includes the value up to the next entry in the GradingStandard, or 100 if there is no upper bound. The lowest value will have a lower bound range of 0."""
+
+class GradingSchemeEntry(Base):
+    __tablename__ = 'grading_scheme_entry'
+    name = Column(String)
+    """The name for an entry value within a GradingStandard that describes the range of the value 
+        Example: A"""
+    value = Column(Integer)
+    """The value for the name of the entry within a GradingStandard.  The entry represents the lower bound of the range for the entry. This range includes the value up to the next entry in the GradingStandard, or 100 if there is no upper bound. The lowest value will have a lower bound range of 0. 
+        Example: 0.9"""
 
 
 class GradingStandard(Base):
@@ -324,7 +353,7 @@ class GradingStandard(Base):
     title = Column(String)
     """the title of the grading standard 
         Example: Account Standard"""
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """the id of the grading standard 
         Example: 1"""
     context_type = Column(String)
@@ -333,14 +362,15 @@ class GradingStandard(Base):
     context_id = Column(Integer)
     """the id for the context either the Account or Course id 
         Example: 1"""
-    grading_scheme = Column(Array : $ref -> GradingSchemeEntry)
+    grading_scheme = Column(JsonObject)
+"""List[GradingSchemeEntry]"""
     """A list of GradingSchemeEntry that make up the Grading Standard as an array of values with the scheme name and value 
         Example: [{'name': 'A', 'value': 0.9}, {'name': 'B', 'value': 0.8}, {'name': 'C', 'value': 0.7}, {'name': 'D', 'value': 0.6}]"""
 
 
 class ePortfolio(Base):
     __tablename__ = 'e_portfolio'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The database ID of the ePortfolio 
         Example: 1"""
     user_id = Column(Integer)
@@ -371,7 +401,7 @@ class ePortfolio(Base):
 
 class ePortfolioPage(Base):
     __tablename__ = 'e_portfolio_page'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The database ID of the ePortfolio 
         Example: 1"""
     eportfolio_id = Column(Integer)
@@ -396,34 +426,42 @@ class ePortfolioPage(Base):
 
 class Term(Base):
     __tablename__ = 'term'
-    id = Column(Integer, primary_key=True)
-    """No Description Provided 
+    id = Column(Integer)
+    """ 
         Example: 1,"""
     name = Column(String)
-    """No Description Provided 
+    """ 
         Example: Default Term"""
     start_at = Column(DateTime)
-    """No Description Provided 
+    """ 
         Example: 2012-06-01T00:00:00-06:00"""
     end_at = Column(DateTime)
-    """No Description Provided 
+    """ 
         Example: null"""
 
-@dataclass
-class CourseProgress:
-    requirement_count: Integer
-    """total number of requirements from all modules"""
-    requirement_completed_count: Integer
-    """total number of requirements the user has completed from all modules"""
-    next_requirement_url: String
-    """url to next module item that has an unmet requirement. null if the user has completed the course or the current module does not require sequential progress"""
-    completed_at: DateTime
-    """date the course was completed. null if the course has not been completed by this user"""
+
+class CourseProgress(Base):
+    __tablename__ = 'course_progress'
+    requirement_count = Column(Integer)
+    """total number of requirements from all modules 
+        Example: 10,"""
+    requirement_completed_count = Column(Integer)
+    """total number of requirements the user has completed from all modules 
+        Example: 1,"""
+    next_requirement_url = Column(String)
+    """url to next module item that has an unmet requirement. null if the user has completed the course or the current module does not require sequential progress 
+        Example: http://localhost/courses/1/modules/items/2"""
+    completed_at = Column(DateTime)
+    """date the course was completed. null if the course has not been completed by this user 
+        Example: 2013-06-01T00:00:00-06:00"""
+    id = Column(Integer)
+    """The unique identifier of the CourseProgress 
+        Example: 123456"""
 
 
 class Course(Base):
     __tablename__ = 'course'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """the unique identifier for the course 
         Example: 370663,"""
     sis_course_id = Column(String)
@@ -447,9 +485,9 @@ class Course(Base):
     original_name = Column(String)
     """the actual course name. This field is returned only if the requesting user has set a nickname for the course. 
         Example: InstructureCon-2012-01"""
-    workflowStateAllowedValues = enum.Enum('workflowStateAllowedValues', ['unpublished', 'available', 'completed', 'deleted'])
+    workflowStateEnum = enum.Enum('workflowStateEnum', ['unpublished', 'available', 'completed', 'deleted'])
     """Enum for the allowed values of the workflow_state field"""
-    workflow_state = Column(Enum(workflowStateAllowedValues))
+    workflow_state = Column(Enum(workflowStateEnum))
     """the current state of the course one of 'unpublished', 'available', 'completed', or 'deleted' 
         Example: available"""
     account_id = Column(Integer)
@@ -461,7 +499,8 @@ class Course(Base):
     enrollment_term_id = Column(Integer)
     """the enrollment term associated with the course 
         Example: 34,"""
-    grading_periods = Column(Array : $ref -> GradingPeriod)
+    grading_periods = Column(JsonObject)
+"""List[GradingPeriod]"""
     """A list of grading periods associated with the course 
         Example: null,"""
     grading_standard_id = Column(Integer)
@@ -482,18 +521,19 @@ class Course(Base):
     locale = Column(String)
     """the course-set locale, if applicable 
         Example: en"""
-    enrollments = Column(Array : $ref -> Enrollment)
+    enrollments = Column(JsonObject)
+"""List[Enrollment]"""
     """A list of enrollments linking the current user to the course. for student enrollments, grading information may be included if include[]=total_scores 
         Example: null,"""
     total_students = Column(Integer)
     """optional: the total number of active and invited students in the course 
         Example: 32,"""
-    calendar = Column($ref -> CalendarLink)
+    calendar = relationship('CalendarLink')
     """course calendar 
         Example: null,"""
-    defaultViewAllowedValues = enum.Enum('defaultViewAllowedValues', ['feed', 'wiki', 'modules', 'syllabus', 'assignments'])
+    defaultViewEnum = enum.Enum('defaultViewEnum', ['feed', 'wiki', 'modules', 'syllabus', 'assignments'])
     """Enum for the allowed values of the default_view field"""
-    default_view = Column(Enum(defaultViewAllowedValues))
+    default_view = Column(Enum(defaultViewEnum))
     """the type of page that users will see when they first visit the course - 'feed': Recent Activity Dashboard - 'wiki': Wiki Front Page - 'modules': Course Modules/Sections Page - 'assignments': Course Assignments List - 'syllabus': Course Syllabus Page other types may be added in the future 
         Example: feed"""
     syllabus_body = Column(String)
@@ -502,65 +542,66 @@ class Course(Base):
     needs_grading_count = Column(Integer)
     """optional: the number of submissions needing grading returned only if the current user has grading rights and include[]=needs_grading_count 
         Example: 17,"""
-    term = Column($ref -> Term)
+    term = relationship('Term')
     """optional: the enrollment term object for the course returned only if include[]=term 
         Example: null,"""
-    course_progress = Column($ref -> CourseProgress)
+    course_progress = relationship('CourseProgress')
     """optional: information on progress through the course returned only if include[]=course_progress 
         Example: null,"""
     apply_assignment_group_weights = Column(Boolean)
     """weight final grade based on assignment group percentages 
         Example: true,"""
-    permissions = Column(PickleType)
+    permissions = Column(JsonObject)
+"""Dict[str, bool]"""
     """optional: the permissions the user has for the course. returned only for a single course and include[]=permissions 
         Example: {'create_discussion_topic': True, 'create_announcement': True}"""
     is_public = Column(Boolean)
-    """No Description Provided 
+    """ 
         Example: true,"""
     is_public_to_auth_users = Column(Boolean)
-    """No Description Provided 
+    """ 
         Example: true,"""
     public_syllabus = Column(Boolean)
-    """No Description Provided 
+    """ 
         Example: true,"""
     public_syllabus_to_auth = Column(Boolean)
-    """No Description Provided 
+    """ 
         Example: true,"""
     public_description = Column(String)
     """optional: the public description of the course 
         Example: Come one, come all to InstructureCon 2012!"""
     storage_quota_mb = Column(Integer)
-    """No Description Provided 
+    """ 
         Example: 5,"""
     storage_quota_used_mb = Column(Integer)
-    """No Description Provided 
+    """ 
         Example: 5,"""
     hide_final_grades = Column(Boolean)
-    """No Description Provided 
+    """ 
         Example: false,"""
     license = Column(String)
-    """No Description Provided 
+    """ 
         Example: Creative Commons"""
     allow_student_assignment_edits = Column(Boolean)
-    """No Description Provided 
+    """ 
         Example: false,"""
     allow_wiki_comments = Column(Boolean)
-    """No Description Provided 
+    """ 
         Example: false,"""
     allow_student_forum_attachments = Column(Boolean)
-    """No Description Provided 
+    """ 
         Example: false,"""
     open_enrollment = Column(Boolean)
-    """No Description Provided 
+    """ 
         Example: true,"""
     self_enrollment = Column(Boolean)
-    """No Description Provided 
+    """ 
         Example: false,"""
     restrict_enrollments_to_course_dates = Column(Boolean)
-    """No Description Provided 
+    """ 
         Example: false,"""
     course_format = Column(String)
-    """No Description Provided 
+    """ 
         Example: online"""
     access_restricted_by_date = Column(Boolean)
     """optional: this will be true if this user is currently prevented from viewing the course because of date restriction settings 
@@ -571,74 +612,79 @@ class Course(Base):
     blueprint = Column(Boolean)
     """optional: whether the course is set as a Blueprint Course (blueprint fields require the Blueprint Courses feature) 
         Example: true,"""
-    blueprint_restrictions = Column(PickleType)
+    blueprint_restrictions = relationship('Unknown')
     """optional: Set of restrictions applied to all locked course objects 
         Example: {'content': True, 'points': True, 'due_dates': False, 'availability_dates': False}"""
-    blueprint_restrictions_by_object_type = Column(PickleType)
+    blueprint_restrictions_by_object_type = relationship('Unknown')
     """optional: Sets of restrictions differentiated by object type applied to locked course objects 
         Example: {'assignment': {'content': True, 'points': True}, 'wiki_page': {'content': True}}"""
     template = Column(Boolean)
     """optional: whether the course is set as a template (requires the Course Templates feature) 
         Example: true"""
 
-@dataclass
-class CalendarLink:
-    ics: String
-    """The URL of the calendar in ICS format"""
+
+class CalendarLink(Base):
+    __tablename__ = 'calendar_link'
+    ics = Column(String)
+    """The URL of the calendar in ICS format 
+        Example: https://canvas.instructure.com/feeds/calendars/course_abcdef.ics"""
+    id = Column(Integer)
+    """The unique identifier of the CalendarLink 
+        Example: 123456"""
 
 
 class File(Base):
     __tablename__ = 'file'
-    id = Column(Integer, primary_key=True)
-    """No Description Provided 
+    id = Column(Integer)
+    """None 
         Example: 569"""
     uuid = Column(String)
-    """No Description Provided 
+    """None 
         Example: SUj23659sdfASF35h265kf352YTdnC4"""
     folder_id = Column(Integer)
-    """No Description Provided 
+    """None 
         Example: 4207"""
     display_name = Column(String)
-    """No Description Provided 
+    """None 
         Example: file.txt"""
     filename = Column(String)
-    """No Description Provided 
+    """None 
         Example: file.txt"""
     content_type = Column(String)
-    """No Description Provided 
+    """None 
         Example: text/plain"""
     url = Column(String)
-    """No Description Provided 
+    """None 
         Example: http://www.example.com/files/569/download?download_frd=1&verifier=c6HdZmxOZa0Fiin2cbvZeI8I5ry7yqD7RChQzb6P"""
     size = Column(Integer)
     """file size in bytes 
         Example: 43451"""
     created_at = Column(DateTime)
-    """No Description Provided 
+    """None 
         Example: 2012-07-06T14:58:50Z"""
     updated_at = Column(DateTime)
-    """No Description Provided 
+    """None 
         Example: 2012-07-06T14:58:50Z"""
     unlock_at = Column(DateTime)
-    """No Description Provided 
+    """None 
         Example: 2012-07-07T14:58:50Z"""
     locked = Column(Boolean)
-    """No Description Provided 
+    """None 
         Example: None"""
     hidden = Column(Boolean)
-    """No Description Provided 
+    """None 
         Example: None"""
     lock_at = Column(DateTime)
-    """No Description Provided 
+    """None 
         Example: 2012-07-20T14:58:50Z"""
     hidden_for_user = Column(Boolean)
-    """No Description Provided 
+    """None 
         Example: None"""
     thumbnail_url = Column(String)
-    """No Description Provided 
+    """None 
         Example: None"""
     modified_at = Column(DateTime)
-    """No Description Provided 
+    """None 
         Example: 2012-07-06T14:58:50Z"""
     mime_class = Column(String)
     """simplified content-type mapping 
@@ -647,35 +693,41 @@ class File(Base):
     """identifier for file in third-party transcoding service 
         Example: m-3z31gfpPf129dD3sSDF85SwSDFnwe"""
     locked_for_user = Column(Boolean)
-    """No Description Provided 
+    """None 
         Example: None"""
-    lock_info = Column($ref -> LockInfo)
-    """No Description Provided 
+    lock_info = relationship('LockInfo')
+    """None 
         Example: None"""
     lock_explanation = Column(String)
-    """No Description Provided 
+    """None 
         Example: This assignment is locked until September 1 at 12:00am"""
     preview_url = Column(String)
     """optional: url to the document preview. This url is specific to the user making the api call. Only included in submission endpoints. 
         Example: None"""
 
-@dataclass
-class ConferenceRecording:
-    duration_minutes: Integer
-    """No Description Provided"""
-    title: String
-    """No Description Provided"""
-    updated_at: DateTime
-    """No Description Provided"""
-    created_at: DateTime
-    """No Description Provided"""
-    playback_url: String
-    """No Description Provided"""
+
+class ConferenceRecording(Base):
+    __tablename__ = 'conference_recording'
+    duration_minutes = Column(Integer)
+    """None 
+        Example: None"""
+    title = Column(String)
+    """None 
+        Example: course2: Test conference 3 [170]_0"""
+    updated_at = Column(DateTime)
+    """None 
+        Example: 2013-12-12T16:09:33.903-07:00"""
+    created_at = Column(DateTime)
+    """None 
+        Example: 2013-12-12T16:09:09.960-07:00"""
+    playback_url = Column(String)
+    """None 
+        Example: http://example.com/recording_url"""
 
 
 class Conference(Base):
     __tablename__ = 'conference'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The id of the conference 
         Example: 170"""
     conference_type = Column(String)
@@ -699,7 +751,8 @@ class Conference(Base):
     title = Column(String)
     """The title of the conference 
         Example: Test conference"""
-    users = Column(Array : Integer)
+    users = Column(JsonObject)
+"""List[int]"""
     """Array of user ids that are participants in the conference 
         Example: [1, 7, 8, 9, 10]"""
     has_advanced_settings = Column(Boolean)
@@ -708,10 +761,11 @@ class Conference(Base):
     long_running = Column(Boolean)
     """If true the conference is long running and has no expected end time 
         Example: None"""
-    user_settings = Column(PickleType)
+    user_settings = relationship('Unknown')
     """A collection of settings specific to the conference type 
         Example: {'record': True}"""
-    recordings = Column(Array : $ref -> ConferenceRecording)
+    recordings = Column(JsonObject)
+"""List[ConferenceRecording]"""
     """A List of recordings for the conference 
         Example: None"""
     url = Column(String)
@@ -727,132 +781,199 @@ class Conference(Base):
     """The ID of this conference's context. 
         Example: None"""
 
-@dataclass
-class Submission:
-    assignment_id: Integer
-    """The submission's assignment id"""
-    assignment: $ref -> Assignment
-    """The submission's assignment (see the assignments API) (optional)"""
-    course: $ref -> Course
-    """The submission's course (see the course API) (optional)"""
-    attempt: Integer
-    """This is the submission attempt number."""
-    body: String
-    """The content of the submission, if it was submitted directly in a text field."""
-    grade: String
-    """The grade for the submission, translated into the assignment grading scheme (so a letter grade, for example)."""
-    grade_matches_current_submission: Boolean
-    """A boolean flag which is false if the student has re-submitted since the submission was last graded."""
-    html_url: String
-    """URL to the submission. This will require the user to log in."""
-    preview_url: String
-    """URL to the submission preview. This will require the user to log in."""
-    score: Integer
-    """The raw score"""
-    submission_comments: Array : $ref -> SubmissionComment
-    """Associated comments for a submission (optional)"""
-    submission_type: Enum
-    """The types of submission ex: ('online_text_entry'|'online_url'|'online_upload'|'media_recording'|'student_annotation')"""
-    submitted_at: DateTime
-    """The timestamp when the assignment was submitted"""
-    url: String
-    """The URL of the submission (for 'online_url' submissions)."""
-    user_id: Integer
-    """The id of the user who created the submission"""
-    grader_id: Integer
-    """The id of the user who graded the submission. This will be null for submissions that haven't been graded yet. It will be a positive number if a real user has graded the submission and a negative number if the submission was graded by a process (e.g. Quiz autograder and autograding LTI tools).  Specifically autograded quizzes set grader_id to the negative of the quiz id.  Submissions autograded by LTI tools set grader_id to the negative of the tool id."""
-    graded_at: DateTime
-    """No Description Provided"""
-    user: $ref -> User
-    """The submissions user (see user API) (optional)"""
-    late: Boolean
-    """Whether the submission was made after the applicable due date"""
-    assignment_visible: Boolean
-    """Whether the assignment is visible to the user who submitted the assignment. Submissions where `assignment_visible` is false no longer count towards the student's grade and the assignment can no longer be accessed by the student. `assignment_visible` becomes false for submissions that do not have a grade and whose assignment is no longer assigned to the student's section."""
-    excused: Boolean
-    """Whether the assignment is excused.  Excused assignments have no impact on a user's grade."""
-    missing: Boolean
-    """Whether the assignment is missing."""
-    late_policy_status: String
-    """The status of the submission in relation to the late policy. Can be late, missing, extended, none, or null."""
-    points_deducted: Integer
-    """The amount of points automatically deducted from the score by the missing/late policy for a late or missing assignment."""
-    seconds_late: Integer
-    """The amount of time, in seconds, that an submission is late by."""
-    workflow_state: Enum
-    """The current state of the submission"""
-    extra_attempts: Integer
-    """Extra submission attempts allowed for the given user and assignment."""
-    anonymous_id: String
-    """A unique short ID identifying this submission without reference to the owning user. Only included if the caller has administrator access for the current account."""
-    posted_at: DateTime
-    """The date this submission was posted to the student, or nil if it has not been posted."""
-    read_status: Enum
-    """The read status of this submission for the given user (optional). Including read_status will mark submission(s) as read."""
-    redo_request: Boolean
-    """This indicates whether the submission has been reassigned by the instructor."""
 
-@dataclass
-class RolePermissions:
-    enabled: Boolean
-    """Whether the role has the permission"""
-    locked: Boolean
-    """Whether the permission is locked by this role"""
-    applies_to_self: Boolean
-    """Whether the permission applies to the account this role is in. Only present if enabled is true"""
-    applies_to_descendants: Boolean
-    """Whether the permission cascades down to sub accounts of the account this role is in. Only present if enabled is true"""
-    readonly: Boolean
-    """Whether the permission can be modified in this role (i.e. whether the permission is locked by an upstream role)."""
-    explicit: Boolean
-    """Whether the value of enabled is specified explicitly by this role, or inherited from an upstream role."""
-    prior_default: Boolean
-    """The value that would have been inherited from upstream if the role had not explicitly set a value. Only present if explicit is true."""
+class Submission(Base):
+    __tablename__ = 'submission'
+    assignment_id = Column(Integer)
+    """The submission's assignment id 
+        Example: 23"""
+    assignment = relationship('Assignment')
+    """The submission's assignment (see the assignments API) (optional) 
+        Example: None"""
+    course = relationship('Course')
+    """The submission's course (see the course API) (optional) 
+        Example: None"""
+    attempt = Column(Integer)
+    """This is the submission attempt number. 
+        Example: 1"""
+    body = Column(String)
+    """The content of the submission, if it was submitted directly in a text field. 
+        Example: There are three factors too..."""
+    grade = Column(String)
+    """The grade for the submission, translated into the assignment grading scheme (so a letter grade, for example). 
+        Example: A-"""
+    grade_matches_current_submission = Column(Boolean)
+    """A boolean flag which is false if the student has re-submitted since the submission was last graded. 
+        Example: True"""
+    html_url = Column(String)
+    """URL to the submission. This will require the user to log in. 
+        Example: http://example.com/courses/255/assignments/543/submissions/134"""
+    preview_url = Column(String)
+    """URL to the submission preview. This will require the user to log in. 
+        Example: http://example.com/courses/255/assignments/543/submissions/134?preview=1"""
+    score = Column(Integer)
+    """The raw score 
+        Example: 13.5"""
+    submission_comments = Column(JsonObject)
+"""List[SubmissionComment]"""
+    """Associated comments for a submission (optional) 
+        Example: None"""
+    submissionTypeEnum = enum.Enum('submissionTypeEnum', ['online_text_entry', 'online_url', 'online_upload', 'media_recording', 'student_annotation'])
+    """Enum for the allowed values of the submission_type field"""
+    submission_type = Column(Enum(submissionTypeEnum))
+    """The types of submission ex: ('online_text_entry'|'online_url'|'online_upload'|'media_recording'|'student_annotation') 
+        Example: online_text_entry"""
+    submitted_at = Column(DateTime)
+    """The timestamp when the assignment was submitted 
+        Example: 2012-01-01T01:00:00Z"""
+    url = Column(String)
+    """The URL of the submission (for 'online_url' submissions). 
+        Example: None"""
+    user_id = Column(Integer)
+    """The id of the user who created the submission 
+        Example: 134"""
+    grader_id = Column(Integer)
+    """The id of the user who graded the submission. This will be null for submissions that haven't been graded yet. It will be a positive number if a real user has graded the submission and a negative number if the submission was graded by a process (e.g. Quiz autograder and autograding LTI tools).  Specifically autograded quizzes set grader_id to the negative of the quiz id.  Submissions autograded by LTI tools set grader_id to the negative of the tool id. 
+        Example: 86"""
+    graded_at = Column(DateTime)
+    """None 
+        Example: 2012-01-02T03:05:34Z"""
+    user = relationship('User')
+    """The submissions user (see user API) (optional) 
+        Example: None"""
+    late = Column(Boolean)
+    """Whether the submission was made after the applicable due date 
+        Example: None"""
+    assignment_visible = Column(Boolean)
+    """Whether the assignment is visible to the user who submitted the assignment. Submissions where `assignment_visible` is false no longer count towards the student's grade and the assignment can no longer be accessed by the student. `assignment_visible` becomes false for submissions that do not have a grade and whose assignment is no longer assigned to the student's section. 
+        Example: True"""
+    excused = Column(Boolean)
+    """Whether the assignment is excused.  Excused assignments have no impact on a user's grade. 
+        Example: True"""
+    missing = Column(Boolean)
+    """Whether the assignment is missing. 
+        Example: True"""
+    late_policy_status = Column(String)
+    """The status of the submission in relation to the late policy. Can be late, missing, extended, none, or null. 
+        Example: missing"""
+    points_deducted = Column(Integer)
+    """The amount of points automatically deducted from the score by the missing/late policy for a late or missing assignment. 
+        Example: 12.3"""
+    seconds_late = Column(Integer)
+    """The amount of time, in seconds, that an submission is late by. 
+        Example: 300"""
+    workflowStateEnum = enum.Enum('workflowStateEnum', ['graded', 'submitted', 'unsubmitted', 'pending_review'])
+    """Enum for the allowed values of the workflow_state field"""
+    workflow_state = Column(Enum(workflowStateEnum))
+    """The current state of the submission 
+        Example: submitted"""
+    extra_attempts = Column(Integer)
+    """Extra submission attempts allowed for the given user and assignment. 
+        Example: 10"""
+    anonymous_id = Column(String)
+    """A unique short ID identifying this submission without reference to the owning user. Only included if the caller has administrator access for the current account. 
+        Example: acJ4Q"""
+    posted_at = Column(DateTime)
+    """The date this submission was posted to the student, or nil if it has not been posted. 
+        Example: 2020-01-02T11:10:30Z"""
+    readStatusEnum = enum.Enum('readStatusEnum', ['read', 'unread'])
+    """Enum for the allowed values of the read_status field"""
+    read_status = Column(Enum(readStatusEnum))
+    """The read status of this submission for the given user (optional). Including read_status will mark submission(s) as read. 
+        Example: read"""
+    redo_request = Column(Boolean)
+    """This indicates whether the submission has been reassigned by the instructor. 
+        Example: true"""
 
-@dataclass
-class Role:
-    label: String
-    """The label of the role."""
-    role: String
-    """The label of the role. (Deprecated alias for 'label')"""
-    base_role_type: String
-    """The role type that is being used as a base for this role. For account-level roles, this is 'AccountMembership'. For course-level roles, it is an enrollment type."""
-    account: PickleType
-    """JSON representation of the account the role is in."""
-    workflow_state: String
-    """The state of the role: 'active', 'inactive', or 'built_in'"""
-    permissions: PickleType
-    """A dictionary of permissions keyed by name (see permissions input parameter in the 'Create a role' API)."""
 
-@dataclass
-class Grade:
-    html_url: String
-    """The URL to the Canvas web UI page for the user's grades, if this is a student enrollment."""
-    current_grade: String
-    """The user's current grade in the class. Only included if user has permissions to view this grade."""
-    final_grade: String
-    """The user's final grade for the class. Only included if user has permissions to view this grade."""
-    current_score: String
-    """The user's current score in the class. Only included if user has permissions to view this score."""
-    final_score: String
-    """The user's final score for the class. Only included if user has permissions to view this score."""
-    current_points: Integer
-    """The total points the user has earned in the class. Only included if user has permissions to view this score and 'current_points' is passed in the request's 'include' parameter."""
-    unposted_current_grade: String
-    """The user's current grade in the class including muted/unposted assignments. Only included if user has permissions to view this grade, typically teachers, TAs, and admins."""
-    unposted_final_grade: String
-    """The user's final grade for the class including muted/unposted assignments. Only included if user has permissions to view this grade, typically teachers, TAs, and admins.."""
-    unposted_current_score: String
-    """The user's current score in the class including muted/unposted assignments. Only included if user has permissions to view this score, typically teachers, TAs, and admins.."""
-    unposted_final_score: String
-    """The user's final score for the class including muted/unposted assignments. Only included if user has permissions to view this score, typically teachers, TAs, and admins.."""
-    unposted_current_points: Integer
-    """The total points the user has earned in the class, including muted/unposted assignments. Only included if user has permissions to view this score (typically teachers, TAs, and admins) and 'current_points' is passed in the request's 'include' parameter."""
+class RolePermissions(Base):
+    __tablename__ = 'role_permissions'
+    enabled = Column(Boolean)
+    """Whether the role has the permission 
+        Example: True"""
+    locked = Column(Boolean)
+    """Whether the permission is locked by this role 
+        Example: None"""
+    applies_to_self = Column(Boolean)
+    """Whether the permission applies to the account this role is in. Only present if enabled is true 
+        Example: True"""
+    applies_to_descendants = Column(Boolean)
+    """Whether the permission cascades down to sub accounts of the account this role is in. Only present if enabled is true 
+        Example: None"""
+    readonly = Column(Boolean)
+    """Whether the permission can be modified in this role (i.e. whether the permission is locked by an upstream role). 
+        Example: None"""
+    explicit = Column(Boolean)
+    """Whether the value of enabled is specified explicitly by this role, or inherited from an upstream role. 
+        Example: True"""
+    prior_default = Column(Boolean)
+    """The value that would have been inherited from upstream if the role had not explicitly set a value. Only present if explicit is true. 
+        Example: None"""
+
+
+class Role(Base):
+    __tablename__ = 'role'
+    label = Column(String)
+    """The label of the role. 
+        Example: New Role"""
+    role = Column(String)
+    """The label of the role. (Deprecated alias for 'label') 
+        Example: New Role"""
+    base_role_type = Column(String)
+    """The role type that is being used as a base for this role. For account-level roles, this is 'AccountMembership'. For course-level roles, it is an enrollment type. 
+        Example: AccountMembership"""
+    account = relationship('Account')
+    """JSON representation of the account the role is in. 
+        Example: {'id': 1019, 'name': 'CGNU', 'parent_account_id': 73, 'root_account_id': 1, 'sis_account_id': 'cgnu'}"""
+    workflow_state = Column(String)
+    """The state of the role: 'active', 'inactive', or 'built_in' 
+        Example: active"""
+    permissions = Column(JsonObject)
+"""Dict[str, RolePermissions]"""
+    """A dictionary of permissions keyed by name (see permissions input parameter in the 'Create a role' API). 
+        Example: {'read_course_content': {'enabled': True, 'locked': False, 'readonly': False, 'explicit': True, 'prior_default': False}, 'read_course_list': {'enabled': True, 'locked': True, 'readonly': True, 'explicit': False}, 'read_question_banks': {'enabled': False, 'locked': True, 'readonly': False, 'explicit': True, 'prior_default': False}, 'read_reports': {'enabled': True, 'locked': False, 'readonly': False, 'explicit': False}}"""
+
+
+class Grade(Base):
+    __tablename__ = 'grade'
+    html_url = Column(String)
+    """The URL to the Canvas web UI page for the user's grades, if this is a student enrollment. 
+        Example: None"""
+    current_grade = Column(String)
+    """The user's current grade in the class. Only included if user has permissions to view this grade. 
+        Example: None"""
+    final_grade = Column(String)
+    """The user's final grade for the class. Only included if user has permissions to view this grade. 
+        Example: None"""
+    current_score = Column(String)
+    """The user's current score in the class. Only included if user has permissions to view this score. 
+        Example: None"""
+    final_score = Column(String)
+    """The user's final score for the class. Only included if user has permissions to view this score. 
+        Example: None"""
+    current_points = Column(Integer)
+    """The total points the user has earned in the class. Only included if user has permissions to view this score and 'current_points' is passed in the request's 'include' parameter. 
+        Example: 150"""
+    unposted_current_grade = Column(String)
+    """The user's current grade in the class including muted/unposted assignments. Only included if user has permissions to view this grade, typically teachers, TAs, and admins. 
+        Example: None"""
+    unposted_final_grade = Column(String)
+    """The user's final grade for the class including muted/unposted assignments. Only included if user has permissions to view this grade, typically teachers, TAs, and admins.. 
+        Example: None"""
+    unposted_current_score = Column(String)
+    """The user's current score in the class including muted/unposted assignments. Only included if user has permissions to view this score, typically teachers, TAs, and admins.. 
+        Example: None"""
+    unposted_final_score = Column(String)
+    """The user's final score for the class including muted/unposted assignments. Only included if user has permissions to view this score, typically teachers, TAs, and admins.. 
+        Example: None"""
+    unposted_current_points = Column(Integer)
+    """The total points the user has earned in the class, including muted/unposted assignments. Only included if user has permissions to view this score (typically teachers, TAs, and admins) and 'current_points' is passed in the request's 'include' parameter. 
+        Example: 150"""
 
 
 class Enrollment(Base):
     __tablename__ = 'enrollment'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The ID of the enrollment. 
         Example: 1"""
     course_id = Column(Integer)
@@ -930,10 +1051,10 @@ class Enrollment(Base):
     html_url = Column(String)
     """The URL to the Canvas web UI page for this course enrollment. 
         Example: https://..."""
-    grades = Column($ref -> Grade)
+    grades = relationship('Grade')
     """The URL to the Canvas web UI page containing the grades associated with this enrollment. 
         Example: {'html_url': 'https://...', 'current_score': 35, 'current_grade': None, 'final_score': 6.67, 'final_grade': None}"""
-    user = Column($ref -> User)
+    user = relationship('User')
     """A description of the user. 
         Example: {'id': 3, 'name': 'Student 1', 'sortable_name': '1, Student', 'short_name': 'Stud 1'}"""
     override_grade = Column(String)
@@ -985,22 +1106,24 @@ class Enrollment(Base):
     """optional: The letter grade equivalent of current_period_unposted_final_score, if available. Only included if user has permission to view this grade, typically teachers, TAs, and admins. If the course the enrollment belongs to does not have grading periods, or if no currently active grading period exists, the value will be null. (applies only to student enrollments, and only available in course endpoints) 
         Example: B"""
 
-@dataclass
-class JWT:
-    token: String
-    """The signed, encrypted, base64 encoded JWT"""
+
+class JWT(Base):
+    __tablename__ = 'jwt'
+    token = Column(String)
+    """The signed, encrypted, base64 encoded JWT 
+        Example: ZXlKaGJHY2lPaUprYVhJaUxDSmxibU1pT2lKQk1qVTJSME5OSW4wLi5QbnAzS1QzLUJkZ3lQZHgtLm5JT0pOV01iZmdtQ0g3WWtybjhLeHlMbW13cl9yZExXTXF3Y0IwbXkzZDd3V1NDd0JYQkV0UTRtTVNJSVRrX0FJcG0zSU1DeThMcW5NdzA0ckdHVTkweDB3MmNJbjdHeWxOUXdveU5ZZ3UwOEN4TkZteUpCeW5FVktrdU05QlRyZXZ3Y1ZTN2hvaC1WZHRqM19PR3duRm5yUVgwSFhFVFc4R28tUGxoQVUtUnhKT0pNakx1OUxYd2NDUzZsaW9ZMno5NVU3T0hLSGNpaDBmSGVjN2FzekVJT3g4NExUeHlReGxYU3BtbFZ5LVNuYWdfbVJUeU5yNHNsMmlDWFcwSzZCNDhpWHJ1clJVVm1LUkVlVTl4ZVVJcTJPaWNpSHpfemJ0X3FrMjhkdzRyajZXRnBHSlZPNWcwTlUzVHlSWk5qdHg1S2NrTjVSQjZ1X2FzWTBScjhTY2VhNFk3Y2JFX01wcm54cFZTNDFIekVVSVRNdzVMTk1GLVpQZy52LVVDTkVJYk8zQ09EVEhPRnFXLUFR"""
 
 
 class Progress(Base):
     __tablename__ = 'progress'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """the ID of the Progress object 
         Example: 1"""
     context_id = Column(Integer)
     """the context owning the job. 
         Example: 1"""
     context_type = Column(String)
-    """No Description Provided 
+    """None 
         Example: Account"""
     user_id = Column(Integer)
     """the id of the user who started the job 
@@ -1011,9 +1134,9 @@ class Progress(Base):
     completion = Column(Integer)
     """percent completed 
         Example: 100"""
-    workflowStateAllowedValues = enum.Enum('workflowStateAllowedValues', ['queued', 'running', 'completed', 'failed'])
+    workflowStateEnum = enum.Enum('workflowStateEnum', ['queued', 'running', 'completed', 'failed'])
     """Enum for the allowed values of the workflow_state field"""
-    workflow_state = Column(Enum(workflowStateAllowedValues))
+    workflow_state = Column(Enum(workflowStateEnum))
     """the state of the job one of 'queued', 'running', 'completed', 'failed' 
         Example: completed"""
     created_at = Column(DateTime)
@@ -1025,7 +1148,7 @@ class Progress(Base):
     message = Column(String)
     """optional details about the job 
         Example: 17 courses processed"""
-    results = Column(PickleType)
+    results = relationship('Unknown')
     """optional results of the job. omitted when job is still pending 
         Example: {'id': '123'}"""
     url = Column(String)
@@ -1035,7 +1158,7 @@ class Progress(Base):
 
 class CommMessage(Base):
     __tablename__ = 'comm_message'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The ID of the CommMessage. 
         Example: 42"""
     created_at = Column(DateTime)
@@ -1044,9 +1167,9 @@ class CommMessage(Base):
     sent_at = Column(DateTime)
     """The date and time this message was sent 
         Example: 2013-03-20T22:42:00Z"""
-    workflowStateAllowedValues = enum.Enum('workflowStateAllowedValues', ['created', 'staged', 'sending', 'sent', 'bounced', 'dashboard', 'cancelled', 'closed'])
+    workflowStateEnum = enum.Enum('workflowStateEnum', ['created', 'staged', 'sending', 'sent', 'bounced', 'dashboard', 'cancelled', 'closed'])
     """Enum for the allowed values of the workflow_state field"""
-    workflow_state = Column(Enum(workflowStateAllowedValues))
+    workflow_state = Column(Enum(workflowStateEnum))
     """The workflow state of the message. One of 'created', 'staged', 'sending', 'sent', 'bounced', 'dashboard', 'cancelled', or 'closed' 
         Example: sent"""
     from = Column(String)
@@ -1074,7 +1197,7 @@ class CommMessage(Base):
 
 class Rubric(Base):
     __tablename__ = 'rubric'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """the ID of the rubric 
         Example: 1"""
     title = Column(String)
@@ -1084,52 +1207,56 @@ class Rubric(Base):
     """the context owning the rubric 
         Example: 1"""
     context_type = Column(String)
-    """No Description Provided 
+    """None 
         Example: Course"""
     points_possible = Column(Integer)
-    """No Description Provided 
+    """None 
         Example: 10.0"""
     reusable = Column(Boolean)
-    """No Description Provided 
+    """None 
         Example: false"""
     read_only = Column(Boolean)
-    """No Description Provided 
+    """None 
         Example: true"""
     free_form_criterion_comments = Column(Boolean)
     """whether or not free-form comments are used 
         Example: true"""
     hide_score_total = Column(Boolean)
-    """No Description Provided 
+    """None 
         Example: true"""
-    data = Column(Array : $ref -> RubricCriterion)
+    data = Column(JsonObject)
+"""List[RubricCriterion]"""
     """An array with all of this Rubric's grading Criteria 
         Example: None"""
-    assessments = Column(Array : $ref -> RubricAssessment)
+    assessments = Column(JsonObject)
+"""List[RubricAssessment]"""
     """If an assessment type is included in the 'include' parameter, includes an array of rubric assessment objects for a given rubric, based on the assessment type requested. If the user does not request an assessment type this key will be absent. 
         Example: None"""
-    associations = Column(Array : $ref -> RubricAssociation)
+    associations = Column(JsonObject)
+"""List[RubricAssociation]"""
     """If an association type is included in the 'include' parameter, includes an array of rubric association objects for a given rubric, based on the association type requested. If the user does not request an association type this key will be absent. 
         Example: None"""
 
 
 class RubricCriterion(Base):
     __tablename__ = 'rubric_criterion'
-    id = Column(String, primary_key=True)
+    id = Column(String)
     """the ID of the criterion 
         Example: _10"""
     description = Column(String)
-    """No Description Provided 
+    """None 
         Example: None"""
     long_description = Column(String)
-    """No Description Provided 
+    """None 
         Example: None"""
     points = Column(Integer)
-    """No Description Provided 
+    """None 
         Example: 5"""
     criterion_use_range = Column(Boolean)
-    """No Description Provided 
+    """None 
         Example: false"""
-    ratings = Column(Array : $ref -> RubricRating)
+    ratings = Column(JsonObject)
+"""List[RubricRating]"""
     """the possible ratings for this Criterion 
         Example: None"""
 
@@ -1137,32 +1264,32 @@ class RubricCriterion(Base):
 class RubricRating(Base):
     __tablename__ = 'rubric_rating'
     points = Column(Integer)
-    """No Description Provided 
+    """None 
         Example: 10"""
-    id = Column(String, primary_key=True)
-    """No Description Provided 
+    id = Column(String)
+    """None 
         Example: rat1"""
     description = Column(String)
-    """No Description Provided 
+    """None 
         Example: Full marks"""
     long_description = Column(String)
-    """No Description Provided 
+    """None 
         Example: Student completed the assignment flawlessly."""
 
 
 class RubricAssessment(Base):
     __tablename__ = 'rubric_assessment'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """the ID of the rubric 
         Example: 1"""
     rubric_id = Column(Integer)
     """the rubric the assessment belongs to 
         Example: 1"""
     rubric_association_id = Column(Integer)
-    """No Description Provided 
+    """None 
         Example: 2"""
     score = Column(Integer)
-    """No Description Provided 
+    """None 
         Example: 5.0"""
     artifact_type = Column(String)
     """the object of the assessment 
@@ -1179,17 +1306,19 @@ class RubricAssessment(Base):
     assessor_id = Column(Integer)
     """user id of the person who made the assessment 
         Example: 6"""
-    data = Column(Array : PickleType)
+    data = Column(JsonObject)
+"""List[Unknown]"""
     """(Optional) If 'full' is included in the 'style' parameter, returned assessments will have their full details contained in their data hash. If the user does not request a style, this key will be absent. 
         Example: None"""
-    comments = Column(Array : String)
+    comments = Column(JsonObject)
+"""List[str]"""
     """(Optional) If 'comments_only' is included in the 'style' parameter, returned assessments will include only the comments portion of their data hash. If the user does not request a style, this key will be absent. 
         Example: None"""
 
 
 class RubricAssociation(Base):
     __tablename__ = 'rubric_association'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """the ID of the association 
         Example: 1"""
     rubric_id = Column(Integer)
@@ -1205,7 +1334,7 @@ class RubricAssociation(Base):
     """Whether or not the associated rubric is used for grade calculation 
         Example: true"""
     summary_data = Column(String)
-    """No Description Provided 
+    """None 
         Example: None"""
     purpose = Column(String)
     """Whether or not the association is for grading (and thus linked to an assignment) or if it's to indicate the rubric should appear in its context. Values will be grading or bookmark. 
@@ -1214,16 +1343,16 @@ class RubricAssociation(Base):
     """Whether or not the score total is displayed within the rubric. This option is only available if the rubric is not used for grading. 
         Example: true"""
     hide_points = Column(Boolean)
-    """No Description Provided 
+    """None 
         Example: true"""
     hide_outcome_results = Column(Boolean)
-    """No Description Provided 
+    """None 
         Example: true"""
 
 
 class Section(Base):
     __tablename__ = 'section'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The unique identifier for the section. 
         Example: 1"""
     name = Column(String)
@@ -1272,7 +1401,7 @@ class PeerReview(Base):
     asset_type = Column(String)
     """The type of the asset 
         Example: Submission"""
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The id of the Peer Review 
         Example: 1"""
     user_id = Column(Integer)
@@ -1294,7 +1423,7 @@ class PeerReview(Base):
 
 class Outcome(Base):
     __tablename__ = 'outcome'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """the ID of the outcome 
         Example: 1"""
     url = Column(String)
@@ -1304,7 +1433,7 @@ class Outcome(Base):
     """the context owning the outcome. may be null for global outcomes 
         Example: 1"""
     context_type = Column(String)
-    """No Description Provided 
+    """None 
         Example: Account"""
     title = Column(String)
     """title of the outcome 
@@ -1324,15 +1453,16 @@ class Outcome(Base):
     mastery_points = Column(Integer)
     """points necessary to demonstrate mastery outcomes. included only if the outcome embeds a rubric criterion. omitted in the abbreviated form. 
         Example: 3"""
-    calculationMethodAllowedValues = enum.Enum('calculationMethodAllowedValues', ['decaying_average', 'n_mastery', 'latest', 'highest', 'average'])
+    calculationMethodEnum = enum.Enum('calculationMethodEnum', ['decaying_average', 'n_mastery', 'latest', 'highest', 'average'])
     """Enum for the allowed values of the calculation_method field"""
-    calculation_method = Column(Enum(calculationMethodAllowedValues))
+    calculation_method = Column(Enum(calculationMethodEnum))
     """the method used to calculate a students score 
         Example: decaying_average"""
     calculation_int = Column(Integer)
     """this defines the variable value used by the calculation_method. included only if calculation_method uses it 
         Example: 65"""
-    ratings = Column(Array : $ref -> RubricRating)
+    ratings = Column(JsonObject)
+"""List[RubricRating]"""
     """possible ratings for this outcome. included only if the outcome embeds a rubric criterion. omitted in the abbreviated form. 
         Example: None"""
     can_edit = Column(Boolean)
@@ -1352,7 +1482,7 @@ class Outcome(Base):
 class OutcomeAlignment(Base):
     """An asset aligned with this outcome"""
     __tablename__ = 'outcome_alignment'
-    id = Column(String, primary_key=True)
+    id = Column(String)
     """A unique identifier for this alignment 
         Example: quiz_3"""
     name = Column(String)
@@ -1365,7 +1495,7 @@ class OutcomeAlignment(Base):
 
 class GroupCategory(Base):
     __tablename__ = 'group_category'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The ID of the group category. 
         Example: 17"""
     name = Column(String)
@@ -1374,21 +1504,21 @@ class GroupCategory(Base):
     role = Column(String)
     """Certain types of group categories have special role designations. Currently, these include: 'communities', 'student_organized', and 'imported'. Regular course/account group categories have a role of null. 
         Example: communities"""
-    selfSignupAllowedValues = enum.Enum('selfSignupAllowedValues', ['restricted', 'enabled'])
+    selfSignupEnum = enum.Enum('selfSignupEnum', ['restricted', 'enabled'])
     """Enum for the allowed values of the self_signup field"""
-    self_signup = Column(Enum(selfSignupAllowedValues))
+    self_signup = Column(Enum(selfSignupEnum))
     """If the group category allows users to join a group themselves, thought they may only be a member of one group per group category at a time. Values include 'restricted', 'enabled', and null 'enabled' allows students to assign themselves to a group 'restricted' restricts them to only joining a group in their section null disallows students from joining groups 
         Example: None"""
-    autoLeaderAllowedValues = enum.Enum('autoLeaderAllowedValues', ['first', 'random'])
+    autoLeaderEnum = enum.Enum('autoLeaderEnum', ['first', 'random'])
     """Enum for the allowed values of the auto_leader field"""
-    auto_leader = Column(Enum(autoLeaderAllowedValues))
+    auto_leader = Column(Enum(autoLeaderEnum))
     """Gives instructors the ability to automatically have group leaders assigned.  Values include 'random', 'first', and null; 'random' picks a student from the group at random as the leader, 'first' sets the first student to be assigned to the group as the leader 
         Example: None"""
     context_type = Column(String)
     """The course or account that the category group belongs to. The pattern here is that whatever the context_type is, there will be an _id field named after that type. So if instead context_type was 'Course', the course_id field would be replaced by an course_id field. 
         Example: Account"""
     account_id = Column(Integer)
-    """No Description Provided 
+    """None 
         Example: 3"""
     group_limit = Column(Integer)
     """If self-signup is enabled, group_limit can be set to cap the number of users in each group. If null, there is no limit. 
@@ -1399,14 +1529,14 @@ class GroupCategory(Base):
     sis_import_id = Column(Integer)
     """The unique identifier for the SIS import. This field is only included if the user has permission to manage SIS information. 
         Example: None"""
-    progress = Column($ref -> Progress)
+    progress = relationship('Progress')
     """If the group category has not yet finished a randomly student assignment request, a progress object will be attached, which will contain information related to the progress of the assignment request. Refer to the Progress API for more information 
         Example: None"""
 
 
 class Collaboration(Base):
     __tablename__ = 'collaboration'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The unique identifier for the collaboration 
         Example: 43"""
     collaboration_type = Column(String)
@@ -1434,10 +1564,10 @@ class Collaboration(Base):
     """The timestamp when the collaboration was last modified 
         Example: 2012-06-01T00:00:00-06:00"""
     description = Column(String)
-    """No Description Provided 
+    """None 
         Example: None"""
     title = Column(String)
-    """No Description Provided 
+    """None 
         Example: None"""
     type = Column(String)
     """Another representation of the collaboration type 
@@ -1452,12 +1582,12 @@ class Collaboration(Base):
 
 class Collaborator(Base):
     __tablename__ = 'collaborator'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The unique user or group identifier for the collaborator. 
         Example: 12345"""
-    typeAllowedValues = enum.Enum('typeAllowedValues', ['user', 'group'])
+    typeEnum = enum.Enum('typeEnum', ['user', 'group'])
     """Enum for the allowed values of the type field"""
-    type = Column(Enum(typeAllowedValues))
+    type = Column(Enum(typeEnum))
     """The type of collaborator (e.g. 'user' or 'group'). 
         Example: user"""
     name = Column(String)
@@ -1467,7 +1597,7 @@ class Collaborator(Base):
 
 class Group(Base):
     __tablename__ = 'group'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The ID of the group. 
         Example: 17"""
     name = Column(String)
@@ -1482,9 +1612,9 @@ class Group(Base):
     followed_by_user = Column(Boolean)
     """Whether or not the current user is following this group. 
         Example: None"""
-    joinLevelAllowedValues = enum.Enum('joinLevelAllowedValues', ['parent_context_auto_join', 'parent_context_request', 'invitation_only'])
+    joinLevelEnum = enum.Enum('joinLevelEnum', ['parent_context_auto_join', 'parent_context_request', 'invitation_only'])
     """Enum for the allowed values of the join_level field"""
-    join_level = Column(Enum(joinLevelAllowedValues))
+    join_level = Column(Enum(joinLevelEnum))
     """How people are allowed to join the group.  For all groups except for community groups, the user must share the group's parent course or account.  For student organized or community groups, where a user can be a member of as many or few as they want, the applicable levels are 'parent_context_auto_join', 'parent_context_request', and 'invitation_only'.  For class groups, where students are divided up and should only be part of one group of the category, this value will always be 'invitation_only', and is not relevant. * If 'parent_context_auto_join', anyone can join and will be automatically accepted. * If 'parent_context_request', anyone  can request to join, which must be approved by a group moderator. * If 'invitation_only', only those how have received an invitation my join the group, by accepting that invitation. 
         Example: invitation_only"""
     members_count = Column(Integer)
@@ -1497,11 +1627,11 @@ class Group(Base):
     """The course or account that the group belongs to. The pattern here is that whatever the context_type is, there will be an _id field named after that type. So if instead context_type was 'account', the course_id field would be replaced by an account_id field. 
         Example: Course"""
     course_id = Column(Integer)
-    """No Description Provided 
+    """None 
         Example: 3"""
-    roleAllowedValues = enum.Enum('roleAllowedValues', ['communities', 'student_organized', 'imported'])
+    roleEnum = enum.Enum('roleEnum', ['communities', 'student_organized', 'imported'])
     """Enum for the allowed values of the role field"""
-    role = Column(Enum(roleAllowedValues))
+    role = Column(Enum(roleEnum))
     """Certain types of groups have special role designations. Currently, these include: 'communities', 'student_organized', and 'imported'. Regular course/account groups have a role of null. 
         Example: None"""
     group_category_id = Column(Integer)
@@ -1516,77 +1646,81 @@ class Group(Base):
     storage_quota_mb = Column(Integer)
     """the storage quota for the group, in megabytes 
         Example: 50"""
-    permissions = Column(PickleType)
+    permissions = Column(JsonObject)
+"""Dict[str, bool]"""
     """optional: the permissions the user has for the group. returned only for a single group and include[]=permissions 
         Example: {'create_discussion_topic': True, 'create_announcement': True}"""
-    users = Column(Array : $ref -> User)
+    users = Column(JsonObject)
+"""List[User]"""
     """optional: A list of users that are members in the group. Returned only if include[]=users. WARNING: this collection's size is capped (if there are an extremely large number of users in the group (thousands) not all of them will be returned).  If you need to capture all the users in a group with certainty consider using the paginated /api/v1/groups/<group_id>/memberships endpoint. 
         Example: None"""
 
-@dataclass
-class InstAccessToken:
-    token: String
-    """The InstAccess token itself -- a signed, encrypted JWT"""
+
+class InstAccessToken(Base):
+    __tablename__ = 'inst_access_token'
+    token = Column(String)
+    """The InstAccess token itself -- a signed, encrypted JWT 
+        Example: eyJhbGciOiJSU0ExXzUiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0.EstatUwzltksvZn4wbjHYiwleM986vzryrv4R9jqvYDGEY4rt6KPG4Q6lJ3oI0piYbH7h17i8vIWv35cqrgRbb7fzmGQ0Ptj74OEjx-1gGBMZCbZTE4W206XxPHRm9TS4qOAvIq0hsvJroE4xZsVWJFiUIKl_Wd2udbvqwF8bvnMKPAx_ooa-9mWaG1N9kd4EWC3Oxu9wi7j8ZG_TbkLSXAg1KxLaO2zXBcU5_HWrKFRxOjHmWpaOMKWkjUInt-DA6fLRszBZp9BFGoop8S9KDs6f1JebLgyM5gGrP-Gz7kSEAPO9eVXtjpd6N29wMClNI0X-Ppp_40Fp4Z3vocTKQ.c_tcevWI68RuZ0s04fDSEQ.wV8KIPHGfYwxm19MWt3K7VVGm4qqZJruPwAZ8rdUANTzJoqwafqOnYZLCyky8lV7J-m64SMVUmR-BOha_CmJEKVVw7T5x70MTP6-nv4RMVPpcViHsNgE2f1GE9HUauVePw7CrnV0PyVaNq2EZasDgdHdye4iG_-hXXQZRnGYzxl8UceTLBVkpEYHlXKdD7DyQ0IT2BYOcZSpXyW7kEIvAHpNaNbvTPCR2t0SeGbuNf8PpYVjohKDpXhNgQ-Pyl9pxs05TrdjTq1fIctzTLqIN58nfqzoqQld6rSkjcAZZXgr8bOsg8EDFMov5gTv2_Uf-YOm52yD1SbL0lJ-VdpKgXu7XtQ4UmEOj40W4uXF-KmLTjEwQmdbmtKrruhakIeth7EZa3w0Xg6RRyHLqKUheAdTgxAIer8MST8tamZlqW1b9wjMw371zSSjeksF_UjTS9p9i7eTtRPuAbf9geDhKb5e-y29MJaL1eKkhTMiEOPY3O4XGGuqRdRMrbjkNmla_RxiQhFJ3T8Dem-yDRan8gqaJLfRRrvGViz-lty96bQT-Z0hVer1uJhAtkM6RT_DgrnAUP_66LfaupZr6bLCKwnYocF1ICcAzkcYw7l5jHa4DTc2ZLgLi-yfbv2wGXpybAvLfZcO424TxHOuQykCSvbfPPuf06kkjPbYmMg6_GdM3JcQ_50VUXQFZkjH45BH5zX7y-2u0ReM8zxt65RpJAvlivrc8j2_E-u0LhlzCwEgsnd61lG4baaI86IVl4wNXkMDui4CgGvAUAf4AXW7Imw_cF0zI69z0SLfahjaYkdREGIYKStBtPAR04sfsR7o.LHBODYub4W4Vq-SXfdbk1Q"""
 
 
 class Folder(Base):
     __tablename__ = 'folder'
     context_type = Column(String)
-    """No Description Provided 
+    """None 
         Example: Course"""
     context_id = Column(Integer)
-    """No Description Provided 
+    """None 
         Example: 1401"""
     files_count = Column(Integer)
-    """No Description Provided 
+    """None 
         Example: None"""
     position = Column(Integer)
-    """No Description Provided 
+    """None 
         Example: 3"""
     updated_at = Column(DateTime)
-    """No Description Provided 
+    """None 
         Example: 2012-07-06T14:58:50Z"""
     folders_url = Column(String)
-    """No Description Provided 
+    """None 
         Example: https://www.example.com/api/v1/folders/2937/folders"""
     files_url = Column(String)
-    """No Description Provided 
+    """None 
         Example: https://www.example.com/api/v1/folders/2937/files"""
     full_name = Column(String)
-    """No Description Provided 
+    """None 
         Example: course files/11folder"""
     lock_at = Column(DateTime)
-    """No Description Provided 
+    """None 
         Example: 2012-07-06T14:58:50Z"""
-    id = Column(Integer, primary_key=True)
-    """No Description Provided 
+    id = Column(Integer)
+    """None 
         Example: 2937"""
     folders_count = Column(Integer)
-    """No Description Provided 
+    """None 
         Example: None"""
     name = Column(String)
-    """No Description Provided 
+    """None 
         Example: 11folder"""
     parent_folder_id = Column(Integer)
-    """No Description Provided 
+    """None 
         Example: 2934"""
     created_at = Column(DateTime)
-    """No Description Provided 
+    """None 
         Example: 2012-07-06T14:58:50Z"""
     unlock_at = Column(DateTime)
-    """No Description Provided 
+    """None 
         Example: None"""
     hidden = Column(Boolean)
-    """No Description Provided 
+    """None 
         Example: None"""
     hidden_for_user = Column(Boolean)
-    """No Description Provided 
+    """None 
         Example: None"""
     locked = Column(Boolean)
-    """No Description Provided 
+    """None 
         Example: True"""
     locked_for_user = Column(Boolean)
-    """No Description Provided 
+    """None 
         Example: None"""
     for_submissions = Column(Boolean)
     """If true, indicates this is a read-only folder containing files submitted to assignments 
@@ -1596,7 +1730,7 @@ class Folder(Base):
 class SisAssignment(Base):
     """Assignments that have post_to_sis enabled with other objects for convenience"""
     __tablename__ = 'sis_assignment'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The unique identifier for the assignment. 
         Example: 4"""
     course_id = Column(Integer)
@@ -1620,9 +1754,9 @@ class SisAssignment(Base):
     points_possible = Column(Integer)
     """The maximum points possible for the assignment 
         Example: 12"""
-    submissionTypesAllowedValues = enum.Enum('submissionTypesAllowedValues', ['discussion_topic', 'online_quiz', 'on_paper', 'not_graded', 'none', 'external_tool', 'online_text_entry', 'online_url', 'online_upload', 'media_recording', 'student_annotation'])
+    submissionTypesEnum = enum.Enum('submissionTypesEnum', ['discussion_topic', 'online_quiz', 'on_paper', 'not_graded', 'none', 'external_tool', 'online_text_entry', 'online_url', 'online_upload', 'media_recording', 'student_annotation'])
     """Enum for the allowed values of the submission_types field"""
-    submission_types = Column(Array : String(submissionTypesAllowedValues))
+    submission_types = Column(Enum(submissionTypesEnum))
     """the types of submissions allowed for this assignment list containing one or more of the following: 'discussion_topic', 'online_quiz', 'on_paper', 'none', 'external_tool', 'online_text_entry', 'online_url', 'online_upload', 'media_recording', 'student_annotation' 
         Example: ['online_text_entry']"""
     integration_id = Column(String)
@@ -1634,13 +1768,16 @@ class SisAssignment(Base):
     include_in_final_grade = Column(Boolean)
     """If false, the assignment will be omitted from the student's final grade 
         Example: True"""
-    assignment_group = Column(Array : $ref -> AssignmentGroupAttributes)
+    assignment_group = Column(JsonObject)
+"""List[AssignmentGroupAttributes]"""
     """Includes attributes of a assignment_group for convenience. For more details see Assignments API. 
         Example: None"""
-    sections = Column(Array : $ref -> SectionAttributes)
+    sections = Column(JsonObject)
+"""List[SectionAttributes]"""
     """Includes attributes of a section for convenience. For more details see Sections API. 
         Example: None"""
-    user_overrides = Column(Array : $ref -> UserAssignmentOverrideAttributes)
+    user_overrides = Column(JsonObject)
+"""List[UserAssignmentOverrideAttributes]"""
     """Includes attributes of a user assignment overrides. For more details see Assignments API. 
         Example: None"""
 
@@ -1648,7 +1785,7 @@ class SisAssignment(Base):
 class AssignmentGroupAttributes(Base):
     """Some of the attributes of an Assignment Group. See Assignments API for more details"""
     __tablename__ = 'assignment_group_attributes'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """the id of the Assignment Group 
         Example: 1"""
     name = Column(String)
@@ -1660,7 +1797,7 @@ class AssignmentGroupAttributes(Base):
     sis_source_id = Column(String)
     """the sis source id of the Assignment Group 
         Example: 1234"""
-    integration_data = Column(PickleType)
+    integration_data = relationship('Unknown')
     """the integration data of the Assignment Group 
         Example: {'5678': '0954'}"""
 
@@ -1668,7 +1805,7 @@ class AssignmentGroupAttributes(Base):
 class SectionAttributes(Base):
     """Some of the attributes of a section. For more details see Sections API."""
     __tablename__ = 'section_attributes'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The unique identifier for the section. 
         Example: 1"""
     name = Column(String)
@@ -1680,13 +1817,13 @@ class SectionAttributes(Base):
     integration_id = Column(String)
     """Optional: The integration ID of the section. 
         Example: 3452342345"""
-    origin_course = Column($ref -> CourseAttributes)
+    origin_course = relationship('CourseAttributes')
     """The course to which the section belongs or the course from which the section was cross-listed 
         Example: None"""
-    xlist_course = Column($ref -> CourseAttributes)
+    xlist_course = relationship('CourseAttributes')
     """Optional: Attributes of the xlist course. Only present when the section has been cross-listed. See Courses API for more details 
         Example: None"""
-    override = Column($ref -> SectionAssignmentOverrideAttributes)
+    override = relationship('SectionAssignmentOverrideAttributes')
     """Optional: Attributes of the assignment override that apply to the section. See Assignment API for more details 
         Example: None"""
 
@@ -1694,7 +1831,7 @@ class SectionAttributes(Base):
 class CourseAttributes(Base):
     """Attributes of a course object.  See Courses API for more details"""
     __tablename__ = 'course_attributes'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The unique Canvas identifier for the origin course 
         Example: 7"""
     name = Column(String)
@@ -1707,22 +1844,28 @@ class CourseAttributes(Base):
     """The integration ID of the origin_course. 
         Example: I-2"""
 
-@dataclass
-class SectionAssignmentOverrideAttributes:
-    override_title: String
-    """The title for the assignment override"""
-    due_at: DateTime
-    """the due date for the assignment. returns null if not present. NOTE: If this assignment has assignment overrides, this field will be the due date as it applies to the user requesting information from the API."""
-    unlock_at: DateTime
-    """(Optional) Time at which this was/will be unlocked."""
-    lock_at: DateTime
-    """(Optional) Time at which this was/will be locked."""
+
+class SectionAssignmentOverrideAttributes(Base):
+    """Attributes of an assignment override that apply to the section object.  See Assignments API for more details"""
+    __tablename__ = 'section_assignment_override_attributes'
+    override_title = Column(String)
+    """The title for the assignment override 
+        Example: some section override"""
+    due_at = Column(DateTime)
+    """the due date for the assignment. returns null if not present. NOTE: If this assignment has assignment overrides, this field will be the due date as it applies to the user requesting information from the API. 
+        Example: 2012-07-01T23:59:00-06:00"""
+    unlock_at = Column(DateTime)
+    """(Optional) Time at which this was/will be unlocked. 
+        Example: 2013-01-01T00:00:00-06:00"""
+    lock_at = Column(DateTime)
+    """(Optional) Time at which this was/will be locked. 
+        Example: 2013-02-01T00:00:00-06:00"""
 
 
 class UserAssignmentOverrideAttributes(Base):
     """Attributes of assignment overrides that apply to users.  See Assignments API for more details"""
     __tablename__ = 'user_assignment_override_attributes'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The unique Canvas identifier for the assignment override 
         Example: 218"""
     title = Column(String)
@@ -1737,32 +1880,44 @@ class UserAssignmentOverrideAttributes(Base):
     lock_at = Column(DateTime)
     """(Optional) Time at which this was/will be locked. 
         Example: 2013-02-01T00:00:00-06:00"""
-    students = Column(Array : $ref -> StudentAttributes)
+    students = Column(JsonObject)
+"""List[StudentAttributes]"""
     """Includes attributes of a student for convenience. For more details see Users API. 
         Example: None"""
 
-@dataclass
-class StudentAttributes:
-    user_id: Integer
-    """The unique Canvas identifier for the user"""
-    sis_user_id: String
-    """The SIS ID associated with the user.  This field is only included if the user came from a SIS import and has permissions to view SIS information."""
 
-@dataclass
-class NotificationPreference:
-    href: String
-    """No Description Provided"""
-    notification: String
-    """The notification this preference belongs to"""
-    category: String
-    """The category of that notification"""
-    frequency: Enum
-    """How often to send notifications to this communication channel for the given notification. Possible values are 'immediately', 'daily', 'weekly', and 'never'"""
+class StudentAttributes(Base):
+    """Attributes of student.  See Users API for more details"""
+    __tablename__ = 'student_attributes'
+    user_id = Column(Integer)
+    """The unique Canvas identifier for the user 
+        Example: 511"""
+    sis_user_id = Column(String)
+    """The SIS ID associated with the user.  This field is only included if the user came from a SIS import and has permissions to view SIS information. 
+        Example: SHEL93921"""
+
+
+class NotificationPreference(Base):
+    __tablename__ = 'notification_preference'
+    href = Column(String)
+    """None 
+        Example: https://canvas.instructure.com/users/1/communication_channels/email/student@example.edu/notification_preferences/new_announcement"""
+    notification = Column(String)
+    """The notification this preference belongs to 
+        Example: new_announcement"""
+    category = Column(String)
+    """The category of that notification 
+        Example: announcement"""
+    frequencyEnum = enum.Enum('frequencyEnum', ['immediately', 'daily', 'weekly', 'never'])
+    """Enum for the allowed values of the frequency field"""
+    frequency = Column(Enum(frequencyEnum))
+    """How often to send notifications to this communication channel for the given notification. Possible values are 'immediately', 'daily', 'weekly', and 'never' 
+        Example: daily"""
 
 
 class ContentMigration(Base):
     __tablename__ = 'content_migration'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """the unique identifier for the migration 
         Example: 370663"""
     migration_type = Column(String)
@@ -1783,9 +1938,9 @@ class ContentMigration(Base):
     user_id = Column(Integer)
     """The user who started the migration 
         Example: 4"""
-    workflowStateAllowedValues = enum.Enum('workflowStateAllowedValues', ['pre_processing', 'pre_processed', 'running', 'waiting_for_select', 'completed', 'failed'])
+    workflowStateEnum = enum.Enum('workflowStateEnum', ['pre_processing', 'pre_processed', 'running', 'waiting_for_select', 'completed', 'failed'])
     """Enum for the allowed values of the workflow_state field"""
-    workflow_state = Column(Enum(workflowStateAllowedValues))
+    workflow_state = Column(Enum(workflowStateEnum))
     """Current state of the content migration: pre_processing, pre_processed, running, waiting_for_select, completed, failed 
         Example: running"""
     started_at = Column(DateTime)
@@ -1798,21 +1953,27 @@ class ContentMigration(Base):
     """file uploading data, see {file:file_uploads.html File Upload Documentation} for file upload workflow This works a little differently in that all the file data is in the pre_attachment hash if there is no upload_url then there was an attachment pre-processing error, the error message will be in the message key This data will only be here after a create or update call 
         Example: {"upload_url"=>"", "message"=>"file exceeded quota", "upload_params"=>{}}"""
 
-@dataclass
-class Migrator:
-    type: String
-    """The value to pass to the create endpoint"""
-    requires_file_upload: Boolean
-    """Whether this endpoint requires a file upload"""
-    name: String
-    """Description of the package type expected"""
-    required_settings: Array : String
-    """A list of fields this system requires"""
+
+class Migrator(Base):
+    __tablename__ = 'migrator'
+    type = Column(String)
+    """The value to pass to the create endpoint 
+        Example: common_cartridge_importer"""
+    requires_file_upload = Column(Boolean)
+    """Whether this endpoint requires a file upload 
+        Example: True"""
+    name = Column(String)
+    """Description of the package type expected 
+        Example: Common Cartridge 1.0/1.1/1.2 Package"""
+    required_settings = Column(JsonObject)
+"""List[str]"""
+    """A list of fields this system requires 
+        Example: ['source_course_id']"""
 
 
 class EnrollmentTerm(Base):
     __tablename__ = 'enrollment_term'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The unique identifier for the enrollment term. 
         Example: 1"""
     sis_term_id = Column(String)
@@ -1833,28 +1994,32 @@ class EnrollmentTerm(Base):
     workflow_state = Column(String)
     """The state of the term. Can be 'active' or 'deleted'. 
         Example: active"""
-    overrides = Column(PickleType)
+    overrides = relationship('Unknown')
     """Term date overrides for specific enrollment types 
         Example: {'StudentEnrollment': {'start_at': '2014-01-07T08:00:00-05:00', 'end_at': '2014-05-14T05:00:00-04:0'}}"""
     course_count = Column(Integer)
     """The number of courses in the term (available via include) 
         Example: 80"""
 
-@dataclass
-class EnrollmentTermsList:
-    enrollment_terms: Array : $ref -> EnrollmentTerm
-    """a paginated list of all terms in the account"""
+
+class EnrollmentTermsList(Base):
+    __tablename__ = 'enrollment_terms_list'
+    enrollment_terms = Column(JsonObject)
+"""List[EnrollmentTerm]"""
+    """a paginated list of all terms in the account 
+        Example: None"""
 
 
 class AssignmentOverride(Base):
     __tablename__ = 'assignment_override'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """the ID of the assignment override 
         Example: 4"""
     assignment_id = Column(Integer)
     """the ID of the assignment the override applies to 
         Example: 123"""
-    student_ids = Column(Array : Integer)
+    student_ids = Column(JsonObject)
+"""List[int]"""
     """the IDs of the override's target students (present if the override targets an ad-hoc set of students) 
         Example: [1, 2, 3]"""
     group_id = Column(Integer)
@@ -1885,15 +2050,15 @@ class AssignmentOverride(Base):
 
 class CommunicationChannel(Base):
     __tablename__ = 'communication_channel'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The ID of the communication channel. 
         Example: 16"""
     address = Column(String)
     """The address, or path, of the communication channel. 
         Example: sheldon@caltech.example.com"""
-    typeAllowedValues = enum.Enum('typeAllowedValues', ['email', 'push', 'sms', 'twitter'])
+    typeEnum = enum.Enum('typeEnum', ['email', 'push', 'sms', 'twitter'])
     """Enum for the allowed values of the type field"""
-    type = Column(Enum(typeAllowedValues))
+    type = Column(Enum(typeEnum))
     """The type of communcation channel being described. Possible values are: 'email', 'push', 'sms', or 'twitter'. This field determines the type of value seen in 'address'. 
         Example: email"""
     position = Column(Integer)
@@ -1902,29 +2067,29 @@ class CommunicationChannel(Base):
     user_id = Column(Integer)
     """The ID of the user that owns this communication channel. 
         Example: 1"""
-    workflowStateAllowedValues = enum.Enum('workflowStateAllowedValues', ['unconfirmed', 'active'])
+    workflowStateEnum = enum.Enum('workflowStateEnum', ['unconfirmed', 'active'])
     """Enum for the allowed values of the workflow_state field"""
-    workflow_state = Column(Enum(workflowStateAllowedValues))
+    workflow_state = Column(Enum(workflowStateEnum))
     """The current state of the communication channel. Possible values are: 'unconfirmed' or 'active'. 
         Example: active"""
 
 
 class OutcomeGroup(Base):
     __tablename__ = 'outcome_group'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """the ID of the outcome group 
         Example: 1"""
     url = Column(String)
     """the URL for fetching/updating the outcome group. should be treated as opaque 
         Example: /api/v1/accounts/1/outcome_groups/1"""
-    parent_outcome_group = Column($ref -> OutcomeGroup)
+    parent_outcome_group = relationship('OutcomeGroup')
     """an abbreviated OutcomeGroup object representing the parent group of this outcome group, if any. omitted in the abbreviated form. 
         Example: None"""
     context_id = Column(Integer)
     """the context owning the outcome group. may be null for global outcome groups. omitted in the abbreviated form. 
         Example: 1"""
     context_type = Column(String)
-    """No Description Provided 
+    """None 
         Example: Account"""
     title = Column(String)
     """title of the outcome group 
@@ -1948,27 +2113,35 @@ class OutcomeGroup(Base):
     """whether the current user can update the outcome group 
         Example: True"""
 
-@dataclass
-class OutcomeLink:
-    url: String
-    """the URL for fetching/updating the outcome link. should be treated as opaque"""
-    context_id: Integer
-    """the context owning the outcome link. will match the context owning the outcome group containing the outcome link; included for convenience. may be null for links in global outcome groups."""
-    context_type: String
-    """No Description Provided"""
-    outcome_group: $ref -> OutcomeGroup
-    """an abbreviated OutcomeGroup object representing the group containing the outcome link."""
-    outcome: $ref -> Outcome
-    """an abbreviated Outcome object representing the outcome linked into the containing outcome group."""
-    assessed: Boolean
-    """whether this outcome has been used to assess a student in the context of this outcome link.  In other words, this will be set to true if the context is a course, and a student has been assessed with this outcome in that course."""
-    can_unlink: Boolean
-    """whether this outcome link is manageable and is not the last link to an aligned outcome"""
+
+class OutcomeLink(Base):
+    __tablename__ = 'outcome_link'
+    url = Column(String)
+    """the URL for fetching/updating the outcome link. should be treated as opaque 
+        Example: /api/v1/accounts/1/outcome_groups/1/outcomes/1"""
+    context_id = Column(Integer)
+    """the context owning the outcome link. will match the context owning the outcome group containing the outcome link; included for convenience. may be null for links in global outcome groups. 
+        Example: 1"""
+    context_type = Column(String)
+    """None 
+        Example: Account"""
+    outcome_group = relationship('OutcomeGroup')
+    """an abbreviated OutcomeGroup object representing the group containing the outcome link. 
+        Example: None"""
+    outcome = relationship('Outcome')
+    """an abbreviated Outcome object representing the outcome linked into the containing outcome group. 
+        Example: None"""
+    assessed = Column(Boolean)
+    """whether this outcome has been used to assess a student in the context of this outcome link.  In other words, this will be set to true if the context is a course, and a student has been assessed with this outcome in that course. 
+        Example: True"""
+    can_unlink = Column(Boolean)
+    """whether this outcome link is manageable and is not the last link to an aligned outcome 
+        Example: None"""
 
 
 class GroupMembership(Base):
     __tablename__ = 'group_membership'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The id of the membership object 
         Example: 92"""
     group_id = Column(Integer)
@@ -1977,9 +2150,9 @@ class GroupMembership(Base):
     user_id = Column(Integer)
     """The id of the user object to which the membership belongs 
         Example: 3"""
-    workflowStateAllowedValues = enum.Enum('workflowStateAllowedValues', ['accepted', 'invited', 'requested'])
+    workflowStateEnum = enum.Enum('workflowStateEnum', ['accepted', 'invited', 'requested'])
     """Enum for the allowed values of the workflow_state field"""
-    workflow_state = Column(Enum(workflowStateAllowedValues))
+    workflow_state = Column(Enum(workflowStateEnum))
     """The current state of the membership. Current possible values are 'accepted', 'invited', and 'requested' 
         Example: accepted"""
     moderator = Column(Boolean)
@@ -1992,26 +2165,34 @@ class GroupMembership(Base):
     """The id of the SIS import if created through SIS. Only included if the user has permission to manage SIS information. 
         Example: 4"""
 
-@dataclass
-class UsageRights:
-    legal_copyright: String
-    """Copyright line for the file"""
-    use_justification: String
-    """Justification for using the file in a Canvas course. Valid values are 'own_copyright', 'public_domain', 'used_by_permission', 'fair_use', 'creative_commons'"""
-    license: String
-    """License identifier for the file."""
-    license_name: String
-    """Readable license name"""
-    message: String
-    """Explanation of the action performed"""
-    file_ids: Array : Integer
-    """List of ids of files that were updated"""
+
+class UsageRights(Base):
+    """Describes the copyright and license information for a File"""
+    __tablename__ = 'usage_rights'
+    legal_copyright = Column(String)
+    """Copyright line for the file 
+        Example: (C) 2014 Incom Corporation Ltd"""
+    use_justification = Column(String)
+    """Justification for using the file in a Canvas course. Valid values are 'own_copyright', 'public_domain', 'used_by_permission', 'fair_use', 'creative_commons' 
+        Example: creative_commons"""
+    license = Column(String)
+    """License identifier for the file. 
+        Example: cc_by_sa"""
+    license_name = Column(String)
+    """Readable license name 
+        Example: CC Attribution Share-Alike"""
+    message = Column(String)
+    """Explanation of the action performed 
+        Example: 4 files updated"""
+    file_ids = Column(JsonObject)
+"""List[int]"""
+    """List of ids of files that were updated 
+        Example: [1, 2, 3]"""
 
 
 class License(Base):
-    """No Description Provided"""
     __tablename__ = 'license'
-    id = Column(String, primary_key=True)
+    id = Column(String)
     """a short string identifying the license 
         Example: cc_by_sa"""
     name = Column(String)
@@ -2024,7 +2205,7 @@ class License(Base):
 
 class MigrationIssue(Base):
     __tablename__ = 'migration_issue'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """the unique identifier for the issue 
         Example: 370663"""
     content_migration_url = Column(String)
@@ -2033,17 +2214,17 @@ class MigrationIssue(Base):
     description = Column(String)
     """Description of the issue for the end-user 
         Example: Questions in this quiz couldn't be converted"""
-    workflowStateAllowedValues = enum.Enum('workflowStateAllowedValues', ['active', 'resolved'])
+    workflowStateEnum = enum.Enum('workflowStateEnum', ['active', 'resolved'])
     """Enum for the allowed values of the workflow_state field"""
-    workflow_state = Column(Enum(workflowStateAllowedValues))
+    workflow_state = Column(Enum(workflowStateEnum))
     """Current state of the issue: active, resolved 
         Example: active"""
     fix_issue_html_url = Column(String)
     """HTML Url to the Canvas page to investigate the issue 
         Example: https://example.com/courses/1/quizzes/2"""
-    issueTypeAllowedValues = enum.Enum('issueTypeAllowedValues', ['todo', 'warning', 'error'])
+    issueTypeEnum = enum.Enum('issueTypeEnum', ['todo', 'warning', 'error'])
     """Enum for the allowed values of the issue_type field"""
-    issue_type = Column(Enum(issueTypeAllowedValues))
+    issue_type = Column(Enum(issueTypeEnum))
     """Severity of the issue: todo, warning, error 
         Example: warning"""
     error_report_html_url = Column(String)
@@ -2059,24 +2240,32 @@ class MigrationIssue(Base):
     """timestamp 
         Example: 2012-06-01T00:00:00-06:00"""
 
-@dataclass
-class AuthenticationEvent:
-    created_at: DateTime
-    """timestamp of the event"""
-    event_type: Enum
-    """authentication event type ('login' or 'logout')"""
-    pseudonym_id: Integer
-    """ID of the pseudonym (login) associated with the event"""
-    account_id: Integer
-    """ID of the account associated with the event. will match the account_id in the associated pseudonym."""
-    user_id: Integer
-    """ID of the user associated with the event will match the user_id in the associated pseudonym."""
+
+class AuthenticationEvent(Base):
+    __tablename__ = 'authentication_event'
+    created_at = Column(DateTime)
+    """timestamp of the event 
+        Example: 2012-07-19T15:00:00-06:00"""
+    eventTypeEnum = enum.Enum('eventTypeEnum', ['login', 'logout'])
+    """Enum for the allowed values of the event_type field"""
+    event_type = Column(Enum(eventTypeEnum))
+    """authentication event type ('login' or 'logout') 
+        Example: login"""
+    pseudonym_id = Column(Integer)
+    """ID of the pseudonym (login) associated with the event 
+        Example: 9478"""
+    account_id = Column(Integer)
+    """ID of the account associated with the event. will match the account_id in the associated pseudonym. 
+        Example: 2319"""
+    user_id = Column(Integer)
+    """ID of the user associated with the event will match the user_id in the associated pseudonym. 
+        Example: 362"""
 
 
 class ContentShare(Base):
     """Content shared between users"""
     __tablename__ = 'content_share'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The id of the content share for the current user 
         Example: 1"""
     name = Column(String)
@@ -2094,19 +2283,20 @@ class ContentShare(Base):
     user_id = Column(Integer)
     """The id of the user who sent or received the content share. 
         Example: 1578941"""
-    sender = Column(PickleType)
+    sender = relationship('Unknown')
     """The user who shared the content. This field is provided only to receivers; it is not populated in the sender's list of sent content shares. 
         Example: {'id': 1, 'display_name': 'Matilda Vargas', 'avatar_image_url': 'http://localhost:3000/image_url', 'html_url': 'http://localhost:3000/users/1'}"""
-    receivers = Column(Array : PickleType)
+    receivers = Column(JsonObject)
+"""List[Unknown]"""
     """An Array of users the content is shared with.  This field is provided only to senders; an empty array will be returned for the receiving users. 
         Example: [{'id': 1, 'display_name': 'Jon Snow', 'avatar_image_url': 'http://localhost:3000/image_url2', 'html_url': 'http://localhost:3000/users/2'}]"""
-    source_course = Column(PickleType)
+    source_course = relationship('Unknown')
     """The course the content was originally shared from. 
         Example: {'id': 787, 'name': 'History 105'}"""
     read_state = Column(String)
     """Whether the recipient has viewed the content share. 
         Example: read"""
-    content_export = Column($ref -> ContentExport)
+    content_export = relationship('ContentExport')
     """The content export record associated with this content share 
         Example: {'id': 42}"""
 
@@ -2114,7 +2304,7 @@ class ContentShare(Base):
 class PageView(Base):
     """The record of a user page view access in Canvas"""
     __tablename__ = 'page_view'
-    id = Column(String, primary_key=True)
+    id = Column(String)
     """A UUID representing the page view.  This is also the unique request id 
         Example: 3e246700-e305-0130-51de-02e33aa501ef"""
     app_name = Column(String)
@@ -2162,42 +2352,53 @@ class PageView(Base):
     remote_ip = Column(String)
     """The origin IP address of the request 
         Example: 173.194.46.71"""
-    links = Column($ref -> PageViewLinks)
+    links = relationship('PageViewLinks')
     """The page view links to define the relationships 
         Example: {'user': 1234, 'account': 1234}"""
 
-@dataclass
-class PageViewLinks:
-    user: Integer
-    """The ID of the user for this page view"""
-    context: Integer
-    """The ID of the context for the request (course id if context_type is Course, etc)"""
-    asset: Integer
-    """The ID of the asset for the request, if any"""
-    real_user: Integer
-    """The ID of the actual user who made this request, if the request was made by a user who was masquerading"""
-    account: Integer
-    """The ID of the account context for this page view"""
+
+class PageViewLinks(Base):
+    """The links of a page view access in Canvas"""
+    __tablename__ = 'page_view_links'
+    user = Column(Integer)
+    """The ID of the user for this page view 
+        Example: 1234"""
+    context = Column(Integer)
+    """The ID of the context for the request (course id if context_type is Course, etc) 
+        Example: 1234"""
+    asset = Column(Integer)
+    """The ID of the asset for the request, if any 
+        Example: 1234"""
+    real_user = Column(Integer)
+    """The ID of the actual user who made this request, if the request was made by a user who was masquerading 
+        Example: 1234"""
+    account = Column(Integer)
+    """The ID of the account context for this page view 
+        Example: 1234"""
 
 
 class Grader(Base):
     __tablename__ = 'grader'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """the user_id of the user who graded the contained submissions 
         Example: 27"""
     name = Column(String)
     """the name of the user who graded the contained submissions 
         Example: Some User"""
-    assignments = Column(Array : Integer)
+    assignments = Column(JsonObject)
+"""List[int]"""
     """the assignment groups for all submissions in this response that were graded by this user.  The details are not nested inside here, but the fact that an assignment is present here means that the grader did grade submissions for this assignment on the contextual date. You can use the id of a grader and of an assignment to make another API call to find all submissions for a grader/assignment combination on a given date. 
         Example: [1, 2, 3]"""
 
-@dataclass
-class Day:
-    date: DateTime
-    """the date represented by this entry"""
-    graders: Integer
-    """an array of the graders who were responsible for the submissions in this response. the submissions are grouped according to the person who graded them and the assignment they were submitted for."""
+
+class Day(Base):
+    __tablename__ = 'day'
+    date = Column(DateTime)
+    """the date represented by this entry 
+        Example: 1986-08-09"""
+    graders = Column(Integer)
+    """an array of the graders who were responsible for the submissions in this response. the submissions are grouped according to the person who graded them and the assignment they were submitted for. 
+        Example: []"""
 
 
 class SubmissionVersion(Base):
@@ -2233,7 +2434,7 @@ class SubmissionVersion(Base):
     grader_id = Column(Integer)
     """the user id of the user who graded this version of the submission 
         Example: 67379"""
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """the id of the submission of which this is a version 
         Example: 11607"""
     new_grade = Column(String)
@@ -2273,68 +2474,82 @@ class SubmissionVersion(Base):
     """the state of the submission at this version 
         Example: unsubmitted"""
 
-@dataclass
-class SubmissionHistory:
-    submission_id: Integer
-    """the id of the submission"""
-    versions: Array : $ref -> SubmissionVersion
-    """an array of all the versions of this submission"""
 
-@dataclass
-class MediaComment:
-    content_type: String
-    """No Description Provided"""
-    display_name: String
-    """No Description Provided"""
-    media_id: String
-    """No Description Provided"""
-    media_type: String
-    """No Description Provided"""
-    url: String
-    """No Description Provided"""
+class SubmissionHistory(Base):
+    __tablename__ = 'submission_history'
+    submission_id = Column(Integer)
+    """the id of the submission 
+        Example: 4"""
+    versions = Column(JsonObject)
+"""List[SubmissionVersion]"""
+    """an array of all the versions of this submission 
+        Example: None"""
+
+
+class MediaComment(Base):
+    __tablename__ = 'media_comment'
+    content_type = Column(String)
+    """None 
+        Example: audio/mp4"""
+    display_name = Column(String)
+    """None 
+        Example: something"""
+    media_id = Column(String)
+    """None 
+        Example: 3232"""
+    media_type = Column(String)
+    """None 
+        Example: audio"""
+    url = Column(String)
+    """None 
+        Example: http://example.com/media_url"""
 
 
 class SubmissionComment(Base):
     __tablename__ = 'submission_comment'
-    id = Column(Integer, primary_key=True)
-    """No Description Provided 
+    id = Column(Integer)
+    """None 
         Example: 37"""
     author_id = Column(Integer)
-    """No Description Provided 
+    """None 
         Example: 134"""
     author_name = Column(String)
-    """No Description Provided 
+    """None 
         Example: Toph Beifong"""
     author = Column(String)
     """Abbreviated user object UserDisplay (see users API). 
         Example: {}"""
     comment = Column(String)
-    """No Description Provided 
+    """None 
         Example: Well here's the thing..."""
     created_at = Column(DateTime)
-    """No Description Provided 
+    """None 
         Example: 2012-01-01T01:00:00Z"""
     edited_at = Column(DateTime)
-    """No Description Provided 
+    """None 
         Example: 2012-01-02T01:00:00Z"""
-    media_comment = Column($ref -> MediaComment)
-    """No Description Provided 
+    media_comment = relationship('MediaComment')
+    """None 
         Example: None"""
 
-@dataclass
-class CourseNickname:
-    course_id: Integer
-    """the ID of the course"""
-    name: String
-    """the actual name of the course"""
-    nickname: String
-    """the calling user's nickname for the course"""
+
+class CourseNickname(Base):
+    __tablename__ = 'course_nickname'
+    course_id = Column(Integer)
+    """the ID of the course 
+        Example: 88"""
+    name = Column(String)
+    """the actual name of the course 
+        Example: S1048576 DPMS1200 Intro to Newtonian Mechanics"""
+    nickname = Column(String)
+    """the calling user's nickname for the course 
+        Example: Physics"""
 
 
 class UserDisplay(Base):
     """This mini-object is used for secondary user responses, when we just want to provide enough information to display a user."""
     __tablename__ = 'user_display'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The ID of the user. 
         Example: 2"""
     short_name = Column(String)
@@ -2347,20 +2562,25 @@ class UserDisplay(Base):
     """URL to access user, either nested to a context or directly. 
         Example: https://school.instructure.com/courses/:course_id/users/:user_id"""
 
-@dataclass
-class AnonymousUserDisplay:
-    anonymous_id: String
-    """A unique short ID identifying this user within the scope of a particular assignment."""
-    avatar_image_url: String
-    """A URL to retrieve a generic avatar."""
-    display_name: String
-    """The anonymized display name for the student."""
+
+class AnonymousUserDisplay(Base):
+    """This mini-object is returned in place of UserDisplay when returning student data for anonymous assignments, and includes an anonymous ID to identify a user within the scope of a single assignment."""
+    __tablename__ = 'anonymous_user_display'
+    anonymous_id = Column(String)
+    """A unique short ID identifying this user within the scope of a particular assignment. 
+        Example: xn29Q"""
+    avatar_image_url = Column(String)
+    """A URL to retrieve a generic avatar. 
+        Example: https://en.gravatar.com/avatar/d8cb8c8cd40ddf0cd05241443a591868?s=80&r=g"""
+    display_name = Column(String)
+    """The anonymized display name for the student. 
+        Example: Student 2"""
 
 
 class User(Base):
     """A Canvas user, e.g. a student, teacher, administrator, observer, etc."""
     __tablename__ = 'user'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The ID of the user. 
         Example: 2"""
     name = Column(String)
@@ -2396,7 +2616,8 @@ class User(Base):
     avatar_state = Column(String)
     """Optional: If avatars are enabled and caller is admin, this field can be requested and will contain the current state of the user's avatar. 
         Example: approved"""
-    enrollments = Column(Array : $ref -> Enrollment)
+    enrollments = Column(JsonObject)
+"""List[Enrollment]"""
     """Optional: This field can be requested with certain API calls, and will return a list of the users active enrollments. See the List enrollments API for more details about the format of these records. 
         Example: None"""
     email = Column(String)
@@ -2418,7 +2639,7 @@ class User(Base):
 
 class Account(Base):
     __tablename__ = 'account'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """the ID of the Account object 
         Example: 2"""
     name = Column(String)
@@ -2464,7 +2685,7 @@ class Account(Base):
 
 class TermsOfService(Base):
     __tablename__ = 'terms_of_service'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """Terms Of Service id 
         Example: 1"""
     terms_type = Column(String)
@@ -2486,7 +2707,7 @@ class TermsOfService(Base):
 
 class HelpLink(Base):
     __tablename__ = 'help_link'
-    id = Column(String, primary_key=True)
+    id = Column(String)
     """The ID of the help link 
         Example: instructor_question"""
     text = Column(String)
@@ -2501,45 +2722,53 @@ class HelpLink(Base):
     type = Column(String)
     """The type of the help link 
         Example: default"""
-    available_to = Column(Array : String)
+    available_to = Column(JsonObject)
+"""List[str]"""
     """The roles that have access to this help link 
         Example: ['user', 'student', 'teacher', 'admin', 'observer', 'unenrolled']"""
 
-@dataclass
-class HelpLinks:
-    help_link_name: String
-    """Help link button title"""
-    help_link_icon: String
-    """Help link button icon"""
-    custom_help_links: Array : $ref -> HelpLink
-    """Help links defined by the account. Could include default help links."""
-    default_help_links: Array : $ref -> HelpLink
-    """Default help links provided when account has not set help links of their own."""
+
+class HelpLinks(Base):
+    __tablename__ = 'help_links'
+    help_link_name = Column(String)
+    """Help link button title 
+        Example: Help And Policies"""
+    help_link_icon = Column(String)
+    """Help link button icon 
+        Example: help"""
+    custom_help_links = Column(JsonObject)
+"""List[HelpLink]"""
+    """Help links defined by the account. Could include default help links. 
+        Example: [{'id': 'link1', 'text': 'Custom Link!', 'subtext': 'Something something.', 'url': 'https://google.com', 'type': 'custom', 'available_to': ['user', 'student', 'teacher', 'admin', 'observer', 'unenrolled'], 'is_featured': True, 'is_new': False, 'feature_headline': 'Check this out!'}]"""
+    default_help_links = Column(JsonObject)
+"""List[HelpLink]"""
+    """Default help links provided when account has not set help links of their own. 
+        Example: [{'available_to': ['student'], 'text': 'Ask Your Instructor a Question', 'subtext': 'Questions are submitted to your instructor', 'url': '#teacher_feedback', 'type': 'default', 'id': 'instructor_question', 'is_featured': False, 'is_new': True, 'feature_headline': ''}, {'available_to': ['user', 'student', 'teacher', 'admin', 'observer', 'unenrolled'], 'text': 'Search the Canvas Guides', 'subtext': 'Find answers to common questions', 'url': 'https://community.canvaslms.com/t5/Guides/ct-p/guides', 'type': 'default', 'id': 'search_the_canvas_guides', 'is_featured': False, 'is_new': False, 'feature_headline': ''}, {'available_to': ['user', 'student', 'teacher', 'admin', 'observer', 'unenrolled'], 'text': 'Report a Problem', 'subtext': 'If Canvas misbehaves, tell us about it', 'url': '#create_ticket', 'type': 'default', 'id': 'report_a_problem', 'is_featured': False, 'is_new': False, 'feature_headline': ''}]"""
 
 
 class CourseEpubExport(Base):
     """Combination of a Course & EpubExport."""
     __tablename__ = 'course_epub_export'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """the unique identifier for the course 
         Example: 101"""
     name = Column(String)
     """the name for the course 
         Example: Maths 101"""
-    epub_export = Column($ref -> EpubExport)
+    epub_export = relationship('EpubExport')
     """ePub export API object 
         Example: None"""
 
 
 class EpubExport(Base):
     __tablename__ = 'epub_export'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """the unique identifier for the export 
         Example: 101"""
     created_at = Column(DateTime)
     """the date and time this export was requested 
         Example: 2014-01-01T00:00:00Z"""
-    attachment = Column($ref -> File)
+    attachment = relationship('File')
     """attachment api object for the export ePub (not present until the export completes) 
         Example: {'url': 'https://example.com/api/v1/attachments/789?download_frd=1&verifier=bG9sY2F0cyEh'}"""
     progress_url = Column(String)
@@ -2548,26 +2777,30 @@ class EpubExport(Base):
     user_id = Column(Integer)
     """The ID of the user who started the export 
         Example: 4"""
-    workflowStateAllowedValues = enum.Enum('workflowStateAllowedValues', ['created', 'exporting', 'exported', 'generating', 'generated', 'failed'])
+    workflowStateEnum = enum.Enum('workflowStateEnum', ['created', 'exporting', 'exported', 'generating', 'generated', 'failed'])
     """Enum for the allowed values of the workflow_state field"""
-    workflow_state = Column(Enum(workflowStateAllowedValues))
+    workflow_state = Column(Enum(workflowStateEnum))
     """Current state of the ePub export: created exporting exported generating generated failed 
         Example: exported"""
 
-@dataclass
-class AssignmentExtension:
-    assignment_id: Integer
-    """The ID of the Assignment the extension belongs to."""
-    user_id: Integer
-    """The ID of the Student that needs the assignment extension."""
-    extra_attempts: Integer
-    """Number of times the student is allowed to re-submit the assignment"""
+
+class AssignmentExtension(Base):
+    __tablename__ = 'assignment_extension'
+    assignment_id = Column(Integer)
+    """The ID of the Assignment the extension belongs to. 
+        Example: 2"""
+    user_id = Column(Integer)
+    """The ID of the Student that needs the assignment extension. 
+        Example: 3"""
+    extra_attempts = Column(Integer)
+    """Number of times the student is allowed to re-submit the assignment 
+        Example: 2"""
 
 
 class PlannerNote(Base):
     """A planner note"""
     __tablename__ = 'planner_note'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The ID of the planner note 
         Example: 234"""
     title = Column(String)
@@ -2601,22 +2834,27 @@ class PlannerNote(Base):
     """the API URL of the linked learning object 
         Example: https://canvas.example.com/api/v1/courses/1578941/assignments/131072"""
 
-@dataclass
-class PairingCode:
-    user_id: Integer
-    """The ID of the user."""
-    code: String
-    """The actual code to be sent to other APIs"""
-    expires_at: String
-    """When the code expires"""
-    workflow_state: String
-    """The current status of the code"""
+
+class PairingCode(Base):
+    """A code used for linking a user to a student to observe them."""
+    __tablename__ = 'pairing_code'
+    user_id = Column(Integer)
+    """The ID of the user. 
+        Example: 2"""
+    code = Column(String)
+    """The actual code to be sent to other APIs 
+        Example: abc123"""
+    expires_at = Column(String)
+    """When the code expires 
+        Example: 2012-05-30T17:45:25Z"""
+    workflow_state = Column(String)
+    """The current status of the code 
+        Example: active"""
 
 
 class GradingPeriod(Base):
-    """No Description Provided"""
     __tablename__ = 'grading_period'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The unique identifier for the grading period. 
         Example: 1023"""
     title = Column(String)
@@ -2638,39 +2876,54 @@ class GradingPeriod(Base):
     """If true, the grading period's close_date has passed. 
         Example: True"""
 
-@dataclass
-class JWKs:
 
-@dataclass
-class CompletionRequirement:
-    type: Enum
-    """one of 'must_view', 'must_submit', 'must_contribute', 'min_score', 'must_mark_done'"""
-    min_score: Integer
-    """minimum score required to complete (only present when type == 'min_score')"""
-    completed: Boolean
-    """whether the calling user has met this requirement (Optional; present only if the caller is a student or if the optional parameter 'student_id' is included)"""
+class JWKs(Base):
+    __tablename__ = 'jw_ks'
 
-@dataclass
-class ContentDetails:
-    points_possible: Integer
-    """No Description Provided"""
-    due_at: DateTime
-    """No Description Provided"""
-    unlock_at: DateTime
-    """No Description Provided"""
-    lock_at: DateTime
-    """No Description Provided"""
-    locked_for_user: Boolean
-    """No Description Provided"""
-    lock_explanation: String
-    """No Description Provided"""
-    lock_info: $ref -> LockInfo
-    """No Description Provided"""
+
+class CompletionRequirement(Base):
+    __tablename__ = 'completion_requirement'
+    typeEnum = enum.Enum('typeEnum', ['must_view', 'must_submit', 'must_contribute', 'min_score', 'must_mark_done'])
+    """Enum for the allowed values of the type field"""
+    type = Column(Enum(typeEnum))
+    """one of 'must_view', 'must_submit', 'must_contribute', 'min_score', 'must_mark_done' 
+        Example: min_score"""
+    min_score = Column(Integer)
+    """minimum score required to complete (only present when type == 'min_score') 
+        Example: 10"""
+    completed = Column(Boolean)
+    """whether the calling user has met this requirement (Optional; present only if the caller is a student or if the optional parameter 'student_id' is included) 
+        Example: True"""
+
+
+class ContentDetails(Base):
+    __tablename__ = 'content_details'
+    points_possible = Column(Integer)
+    """None 
+        Example: 20"""
+    due_at = Column(DateTime)
+    """None 
+        Example: 2012-12-31T06:00:00-06:00"""
+    unlock_at = Column(DateTime)
+    """None 
+        Example: 2012-12-31T06:00:00-06:00"""
+    lock_at = Column(DateTime)
+    """None 
+        Example: 2012-12-31T06:00:00-06:00"""
+    locked_for_user = Column(Boolean)
+    """None 
+        Example: True"""
+    lock_explanation = Column(String)
+    """None 
+        Example: This quiz is part of an unpublished module and is not available yet."""
+    lock_info = relationship('LockInfo')
+    """None 
+        Example: {'asset_string': 'assignment_4', 'unlock_at': '2012-12-31T06:00:00-06:00', 'lock_at': '2012-12-31T06:00:00-06:00', 'context_module': {}}"""
 
 
 class ModuleItem(Base):
     __tablename__ = 'module_item'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """the unique identifier for the module item 
         Example: 768"""
     module_id = Column(Integer)
@@ -2685,9 +2938,9 @@ class ModuleItem(Base):
     indent = Column(Integer)
     """0-based indent level; module items may be indented to show a hierarchy 
         Example: None"""
-    typeAllowedValues = enum.Enum('typeAllowedValues', ['File', 'Page', 'Discussion', 'Assignment', 'Quiz', 'SubHeader', 'ExternalUrl', 'ExternalTool'])
+    typeEnum = enum.Enum('typeEnum', ['File', 'Page', 'Discussion', 'Assignment', 'Quiz', 'SubHeader', 'ExternalUrl', 'ExternalTool'])
     """Enum for the allowed values of the type field"""
-    type = Column(Enum(typeAllowedValues))
+    type = Column(Enum(typeEnum))
     """the type of object referred to one of 'File', 'Page', 'Discussion', 'Assignment', 'Quiz', 'SubHeader', 'ExternalUrl', 'ExternalTool' 
         Example: Assignment"""
     content_id = Column(Integer)
@@ -2708,46 +2961,62 @@ class ModuleItem(Base):
     new_tab = Column(Boolean)
     """(only for 'ExternalTool' type) whether the external tool opens in a new tab 
         Example: None"""
-    completion_requirement = Column($ref -> CompletionRequirement)
+    completion_requirement = relationship('CompletionRequirement')
     """Completion requirement for this module item 
         Example: {'type': 'min_score', 'min_score': 10, 'completed': True}"""
-    content_details = Column($ref -> ContentDetails)
+    content_details = relationship('ContentDetails')
     """(Present only if requested through include[]=content_details) If applicable, returns additional details specific to the associated object 
         Example: {'points_possible': 20, 'due_at': '2012-12-31T06:00:00-06:00', 'unlock_at': '2012-12-31T06:00:00-06:00', 'lock_at': '2012-12-31T06:00:00-06:00'}"""
     published = Column(Boolean)
     """(Optional) Whether this module item is published. This field is present only if the caller has permission to view unpublished items. 
         Example: True"""
 
-@dataclass
-class ModuleItemSequenceNode:
-    prev: $ref -> ModuleItem
-    """The previous ModuleItem in the sequence"""
-    current: $ref -> ModuleItem
-    """The ModuleItem being queried"""
-    next: $ref -> ModuleItem
-    """The next ModuleItem in the sequence"""
-    mastery_path: PickleType
-    """The conditional release rule for the module item, if applicable"""
 
-@dataclass
-class ModuleItemSequence:
-    items: Array : $ref -> ModuleItemSequenceNode
-    """an array containing one ModuleItemSequenceNode for each appearence of the asset in the module sequence (up to 10 total)"""
-    modules: Array : $ref -> Module
-    """an array containing each Module referenced above"""
+class ModuleItemSequenceNode(Base):
+    __tablename__ = 'module_item_sequence_node'
+    prev = relationship('ModuleItem')
+    """The previous ModuleItem in the sequence 
+        Example: None"""
+    current = relationship('ModuleItem')
+    """The ModuleItem being queried 
+        Example: {'id': 768, 'module_id': 123, 'title': 'A lonely page', 'type': 'Page'}"""
+    next = relationship('ModuleItem')
+    """The next ModuleItem in the sequence 
+        Example: {'id': 769, 'module_id': 127, 'title': 'Project 1', 'type': 'Assignment'}"""
+    mastery_path = relationship('Unknown')
+    """The conditional release rule for the module item, if applicable 
+        Example: {'locked': True, 'assignment_sets': [], 'selected_set_id': None, 'awaiting_choice': False, 'still_processing': False, 'modules_url': '/courses/11/modules', 'choose_url': '/courses/11/modules/items/9/choose', 'modules_tab_disabled': False}"""
 
-@dataclass
-class SisImportError:
-    sis_import_id: Integer
-    """The unique identifier for the SIS import."""
-    file: String
-    """The file where the error message occurred."""
-    message: String
-    """The error message that from the record."""
-    row_info: String
-    """The contents of the line that had the error."""
-    row: Integer
-    """The line number where the error occurred. Some Importers do not yet support this. This is a 1 based index starting with the header row."""
+
+class ModuleItemSequence(Base):
+    __tablename__ = 'module_item_sequence'
+    items = Column(JsonObject)
+"""List[ModuleItemSequenceNode]"""
+    """an array containing one ModuleItemSequenceNode for each appearence of the asset in the module sequence (up to 10 total) 
+        Example: [{'prev': None, 'current': {'id': 768, 'module_id': 123, 'title': 'A lonely page', 'type': 'Page'}, 'next': {'id': 769, 'module_id': 127, 'title': 'Project 1', 'type': 'Assignment'}, 'mastery_path': {'locked': True, 'assignment_sets': [], 'selected_set_id': None, 'awaiting_choice': False, 'still_processing': False, 'modules_url': '/courses/11/modules', 'choose_url': '/courses/11/modules/items/9/choose', 'modules_tab_disabled': False}}]"""
+    modules = Column(JsonObject)
+"""List[Module]"""
+    """an array containing each Module referenced above 
+        Example: [{'id': 123, 'name': 'Overview'}, {'id': 127, 'name': 'Imaginary Numbers'}]"""
+
+
+class SisImportError(Base):
+    __tablename__ = 'sis_import_error'
+    sis_import_id = Column(Integer)
+    """The unique identifier for the SIS import. 
+        Example: 1"""
+    file = Column(String)
+    """The file where the error message occurred. 
+        Example: courses.csv"""
+    message = Column(String)
+    """The error message that from the record. 
+        Example: No short_name given for course C001"""
+    row_info = Column(String)
+    """The contents of the line that had the error. 
+        Example: account_1, Sub account 1,, active """
+    row = Column(Integer)
+    """The line number where the error occurred. Some Importers do not yet support this. This is a 1 based index starting with the header row. 
+        Example: 34"""
 
 
 class AuthenticationProvider(Base):
@@ -2758,7 +3027,7 @@ class AuthenticationProvider(Base):
     auth_type = Column(String)
     """Valid for all providers. 
         Example: saml"""
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """Valid for all providers. 
         Example: 1649"""
     log_out_url = Column(String)
@@ -2806,86 +3075,116 @@ class AuthenticationProvider(Base):
     jit_provisioning = Column(Boolean)
     """Just In Time provisioning. Valid for all providers except Canvas (which has the similar in concept self_registration setting). 
         Example: None"""
-    federated_attributes = Column($ref -> FederatedAttributesConfig)
-    """No Description Provided 
+    federated_attributes = relationship('FederatedAttributesConfig')
+    """None 
         Example: None"""
     mfa_required = Column(Boolean)
     """If multi-factor authentication is required when logging in with this authentication provider. The account must not have MFA disabled. 
         Example: None"""
 
-@dataclass
-class SSOSettings:
-    login_handle_name: String
-    """The label used for unique login identifiers."""
-    change_password_url: String
-    """The url to redirect users to for password resets. Leave blank for default Canvas behavior"""
-    auth_discovery_url: String
-    """If a discovery url is set, canvas will forward all users to that URL when they need to be authenticated. That page will need to then help the user figure out where they need to go to log in. If no discovery url is configured, the first configuration will be used to attempt to authenticate the user."""
-    unknown_user_url: String
-    """If an unknown user url is set, Canvas will forward to that url when a service authenticates a user, but that user does not exist in Canvas. The default behavior is to present an error."""
 
-@dataclass
-class FederatedAttributesConfig:
-    admin_roles: String
-    """A comma separated list of role names to grant to the user. Note that these only apply at the root account level, and not sub-accounts. If the attribute is not marked for provisioning only, the user will also be removed from any other roles they currently hold that are not still specified by the IdP."""
-    display_name: String
-    """The full display name of the user"""
-    email: String
-    """The user's e-mail address"""
-    given_name: String
-    """The first, or given, name of the user"""
-    integration_id: String
-    """The secondary unique identifier for SIS purposes"""
-    locale: String
-    """The user's preferred locale/language"""
-    name: String
-    """The full name of the user"""
-    sis_user_id: String
-    """The unique SIS identifier"""
-    sortable_name: String
-    """The full name of the user for sorting purposes"""
-    surname: String
-    """The surname, or last name, of the user"""
-    timezone: String
-    """The user's preferred time zone"""
+class SSOSettings(Base):
+    """Settings that are applicable across an account's authentication configuration, even if there are multiple individual providers"""
+    __tablename__ = 'sso_settings'
+    login_handle_name = Column(String)
+    """The label used for unique login identifiers. 
+        Example: Username"""
+    change_password_url = Column(String)
+    """The url to redirect users to for password resets. Leave blank for default Canvas behavior 
+        Example: https://example.com/reset_password"""
+    auth_discovery_url = Column(String)
+    """If a discovery url is set, canvas will forward all users to that URL when they need to be authenticated. That page will need to then help the user figure out where they need to go to log in. If no discovery url is configured, the first configuration will be used to attempt to authenticate the user. 
+        Example: https://example.com/which_account"""
+    unknown_user_url = Column(String)
+    """If an unknown user url is set, Canvas will forward to that url when a service authenticates a user, but that user does not exist in Canvas. The default behavior is to present an error. 
+        Example: https://example.com/register_for_canvas"""
 
-@dataclass
-class FederatedAttributeConfig:
-    attribute: String
-    """The name of the attribute as it will be sent from the authentication provider"""
-    provisioning_only: Boolean
-    """If the attribute should be applied only when provisioning a new user, rather than all logins"""
 
-@dataclass
-class ProficiencyRating:
-    description: String
-    """The description of the rating"""
-    points: Integer
-    """A non-negative number of points for the rating"""
-    mastery: Boolean
-    """Indicates the rating where mastery is first achieved"""
-    color: String
-    """The hex color code of the rating"""
+class FederatedAttributesConfig(Base):
+    """A mapping of Canvas attribute names to attribute names that a provider may send, in order to update the value of these attributes when a user logs in. The values can be a FederatedAttributeConfig, or a raw string corresponding to the "attribute" property of a FederatedAttributeConfig. In responses, full FederatedAttributeConfig objects are returned if JIT provisioning is enabled, otherwise just the attribute names are returned."""
+    __tablename__ = 'federated_attributes_config'
+    admin_roles = Column(String)
+    """A comma separated list of role names to grant to the user. Note that these only apply at the root account level, and not sub-accounts. If the attribute is not marked for provisioning only, the user will also be removed from any other roles they currently hold that are not still specified by the IdP. 
+        Example: None"""
+    display_name = Column(String)
+    """The full display name of the user 
+        Example: None"""
+    email = Column(String)
+    """The user's e-mail address 
+        Example: None"""
+    given_name = Column(String)
+    """The first, or given, name of the user 
+        Example: None"""
+    integration_id = Column(String)
+    """The secondary unique identifier for SIS purposes 
+        Example: None"""
+    locale = Column(String)
+    """The user's preferred locale/language 
+        Example: None"""
+    name = Column(String)
+    """The full name of the user 
+        Example: None"""
+    sis_user_id = Column(String)
+    """The unique SIS identifier 
+        Example: None"""
+    sortable_name = Column(String)
+    """The full name of the user for sorting purposes 
+        Example: None"""
+    surname = Column(String)
+    """The surname, or last name, of the user 
+        Example: None"""
+    timezone = Column(String)
+    """The user's preferred time zone 
+        Example: None"""
 
-@dataclass
-class Proficiency:
-    ratings: unknown_type
-    """An array of proficiency ratings. See the ProficiencyRating specification above."""
+
+class FederatedAttributeConfig(Base):
+    """A single attribute name to be federated when a user logs in"""
+    __tablename__ = 'federated_attribute_config'
+    attribute = Column(String)
+    """The name of the attribute as it will be sent from the authentication provider 
+        Example: mail"""
+    provisioning_only = Column(Boolean)
+    """If the attribute should be applied only when provisioning a new user, rather than all logins 
+        Example: None"""
+
+
+class ProficiencyRating(Base):
+    __tablename__ = 'proficiency_rating'
+    description = Column(String)
+    """The description of the rating 
+        Example: Exceeds Mastery"""
+    points = Column(Integer)
+    """A non-negative number of points for the rating 
+        Example: 4"""
+    mastery = Column(Boolean)
+    """Indicates the rating where mastery is first achieved 
+        Example: None"""
+    color = Column(String)
+    """The hex color code of the rating 
+        Example: 127A1B"""
+
+
+class Proficiency(Base):
+    __tablename__ = 'proficiency'
+    ratings = Column(JsonObject(List))
+    """An array of proficiency ratings. See the ProficiencyRating specification above. 
+        Example: None"""
 
 
 class Tab(Base):
     __tablename__ = 'tab'
     html_url = Column(String)
-    """No Description Provided 
+    """None 
         Example: /courses/1/external_tools/4"""
-    id = Column(String, primary_key=True)
-    """No Description Provided 
+    id = Column(String)
+    """None 
         Example: context_external_tool_4"""
     label = Column(String)
-    """No Description Provided 
+    """None 
         Example: WordPress"""
     type = Column(String)
-    """No Description Provided 
+    """None 
         Example: external"""
     hidden = Column(Boolean)
     """only included if true 
@@ -2897,23 +3196,29 @@ class Tab(Base):
     """1 based 
         Example: 2"""
 
-@dataclass
-class GradeChangeEventLinks:
-    assignment: Integer
-    """ID of the assignment associated with the event"""
-    course: Integer
-    """ID of the course associated with the event. will match the context_id in the associated assignment if the context type for the assignment is a course"""
-    student: Integer
-    """ID of the student associated with the event. will match the user_id in the associated submission."""
-    grader: Integer
-    """ID of the grader associated with the event. will match the grader_id in the associated submission."""
-    page_view: String
-    """ID of the page view during the event if it exists."""
+
+class GradeChangeEventLinks(Base):
+    __tablename__ = 'grade_change_event_links'
+    assignment = Column(Integer)
+    """ID of the assignment associated with the event 
+        Example: 2319"""
+    course = Column(Integer)
+    """ID of the course associated with the event. will match the context_id in the associated assignment if the context type for the assignment is a course 
+        Example: 2319"""
+    student = Column(Integer)
+    """ID of the student associated with the event. will match the user_id in the associated submission. 
+        Example: 2319"""
+    grader = Column(Integer)
+    """ID of the grader associated with the event. will match the grader_id in the associated submission. 
+        Example: 2319"""
+    page_view = Column(String)
+    """ID of the page view during the event if it exists. 
+        Example: e2b76430-27a5-0131-3ca1-48e0eb13f29b"""
 
 
 class GradeChangeEvent(Base):
     __tablename__ = 'grade_change_event'
-    id = Column(String, primary_key=True)
+    id = Column(String)
     """ID of the event. 
         Example: e2b76430-27a5-0131-3ca1-48e0eb13f29b"""
     created_at = Column(DateTime)
@@ -2943,15 +3248,14 @@ class GradeChangeEvent(Base):
     request_id = Column(String)
     """The unique request id of the request during the grade change. 
         Example: e2b76430-27a5-0131-3ca1-48e0eb13f29b"""
-    links = Column($ref -> GradeChangeEventLinks)
-    """No Description Provided 
+    links = relationship('GradeChangeEventLinks')
+    """None 
         Example: None"""
 
 
 class Report(Base):
-    """No Description Provided"""
     __tablename__ = 'report'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The unique identifier for the report. 
         Example: 1"""
     report = Column(String)
@@ -2960,7 +3264,7 @@ class Report(Base):
     file_url = Column(String)
     """The url to the report download. 
         Example: https://example.com/some/path"""
-    attachment = Column($ref -> File)
+    attachment = relationship('File')
     """The attachment api object of the report. Only available after the report has completed. 
         Example: None"""
     status = Column(String)
@@ -2975,7 +3279,7 @@ class Report(Base):
     ended_at = Column(DateTime)
     """The date and time the report finished processing. 
         Example: 2013-12-02T00:03:21-06:00"""
-    parameters = Column($ref -> ReportParameters)
+    parameters = relationship('ReportParameters')
     """The report parameters 
         Example: {'course_id': 2, 'start_at': '2012-07-13T10:55:20-06:00', 'end_at': '2012-07-13T10:55:20-06:00'}"""
     progress = Column(Integer)
@@ -2985,50 +3289,73 @@ class Report(Base):
     """This is the current line count being written to the report. It updates every 1000 records. 
         Example: 12000"""
 
-@dataclass
-class ReportParameters:
-    enrollment_term_id: Integer
-    """The canvas id of the term to get grades from"""
-    include_deleted: Boolean
-    """If true, deleted objects will be included. If false, deleted objects will be omitted."""
-    course_id: Integer
-    """The id of the course to report on"""
-    order: Enum
-    """The sort order for the csv, Options: 'users', 'courses', 'outcomes'."""
-    users: Boolean
-    """If true, user data will be included. If false, user data will be omitted."""
-    accounts: Boolean
-    """If true, account data will be included. If false, account data will be omitted."""
-    terms: Boolean
-    """If true, term data will be included. If false, term data will be omitted."""
-    courses: Boolean
-    """If true, course data will be included. If false, course data will be omitted."""
-    sections: Boolean
-    """If true, section data will be included. If false, section data will be omitted."""
-    enrollments: Boolean
-    """If true, enrollment data will be included. If false, enrollment data will be omitted."""
-    groups: Boolean
-    """If true, group data will be included. If false, group data will be omitted."""
-    xlist: Boolean
-    """If true, data for crosslisted courses will be included. If false, data for crosslisted courses will be omitted."""
-    sis_terms_csv: Integer
-    """No Description Provided"""
-    sis_accounts_csv: Integer
-    """No Description Provided"""
-    include_enrollment_state: Boolean
-    """If true, enrollment state will be included. If false, enrollment state will be omitted. Defaults to false."""
-    enrollment_state: Array : String
-    """Include enrollment state. Defaults to 'all' Options: ['active'| 'invited'| 'creation_pending'| 'deleted'| 'rejected'| 'completed'| 'inactive'| 'all']"""
-    start_at: DateTime
-    """The beginning date for submissions. Max time range is 2 weeks."""
-    end_at: DateTime
-    """The end date for submissions. Max time range is 2 weeks."""
+
+class ReportParameters(Base):
+    """The parameters returned will vary for each report."""
+    __tablename__ = 'report_parameters'
+    enrollment_term_id = Column(Integer)
+    """The canvas id of the term to get grades from 
+        Example: 2"""
+    include_deleted = Column(Boolean)
+    """If true, deleted objects will be included. If false, deleted objects will be omitted. 
+        Example: None"""
+    course_id = Column(Integer)
+    """The id of the course to report on 
+        Example: 2"""
+    orderEnum = enum.Enum('orderEnum', ['users', 'courses', 'outcomes'])
+    """Enum for the allowed values of the order field"""
+    order = Column(Enum(orderEnum))
+    """The sort order for the csv, Options: 'users', 'courses', 'outcomes'. 
+        Example: users"""
+    users = Column(Boolean)
+    """If true, user data will be included. If false, user data will be omitted. 
+        Example: None"""
+    accounts = Column(Boolean)
+    """If true, account data will be included. If false, account data will be omitted. 
+        Example: None"""
+    terms = Column(Boolean)
+    """If true, term data will be included. If false, term data will be omitted. 
+        Example: None"""
+    courses = Column(Boolean)
+    """If true, course data will be included. If false, course data will be omitted. 
+        Example: None"""
+    sections = Column(Boolean)
+    """If true, section data will be included. If false, section data will be omitted. 
+        Example: None"""
+    enrollments = Column(Boolean)
+    """If true, enrollment data will be included. If false, enrollment data will be omitted. 
+        Example: None"""
+    groups = Column(Boolean)
+    """If true, group data will be included. If false, group data will be omitted. 
+        Example: None"""
+    xlist = Column(Boolean)
+    """If true, data for crosslisted courses will be included. If false, data for crosslisted courses will be omitted. 
+        Example: None"""
+    sis_terms_csv = Column(Integer)
+    """None 
+        Example: 1"""
+    sis_accounts_csv = Column(Integer)
+    """None 
+        Example: 1"""
+    include_enrollment_state = Column(Boolean)
+    """If true, enrollment state will be included. If false, enrollment state will be omitted. Defaults to false. 
+        Example: None"""
+    enrollment_state = Column(JsonObject)
+"""List[str]"""
+    """Include enrollment state. Defaults to 'all' Options: ['active'| 'invited'| 'creation_pending'| 'deleted'| 'rejected'| 'completed'| 'inactive'| 'all'] 
+        Example: ['all']"""
+    start_at = Column(DateTime)
+    """The beginning date for submissions. Max time range is 2 weeks. 
+        Example: 2012-07-13T10:55:20-06:00"""
+    end_at = Column(DateTime)
+    """The end date for submissions. Max time range is 2 weeks. 
+        Example: 2012-07-13T10:55:20-06:00"""
 
 
 class Profile(Base):
     """Profile details for a Canvas user."""
     __tablename__ = 'profile'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The ID of the user. 
         Example: 1234"""
     name = Column(String)
@@ -3041,10 +3368,10 @@ class Profile(Base):
     """user, sample 
         Example: user, sample"""
     title = Column(String)
-    """No Description Provided 
+    """None 
         Example: None"""
     bio = Column(String)
-    """No Description Provided 
+    """None 
         Example: None"""
     primary_email = Column(String)
     """sample_user@example.com 
@@ -3056,13 +3383,13 @@ class Profile(Base):
     """sis1 
         Example: sis1"""
     lti_user_id = Column(String)
-    """No Description Provided 
+    """None 
         Example: None"""
     avatar_url = Column(String)
     """The avatar_url can change over time, so we recommend not caching it for more than a few hours 
         Example: ..url.."""
-    calendar = Column($ref -> CalendarLink)
-    """No Description Provided 
+    calendar = relationship('CalendarLink')
+    """None 
         Example: None"""
     time_zone = Column(String)
     """Optional: This field is only returned in certain API calls, and will return the IANA time zone name of the user's preferred timezone. 
@@ -3090,7 +3417,7 @@ class Avatar(Base):
     display_name = Column(String)
     """A textual description of the avatar record. 
         Example: user, sample"""
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """['attachment' type only] the internal id of the attachment 
         Example: 12"""
     content_type = Column(String)
@@ -3105,15 +3432,14 @@ class Avatar(Base):
 
 
 class Admin(Base):
-    """No Description Provided"""
     __tablename__ = 'admin'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The unique identifier for the account role/user assignment. 
         Example: 1023"""
     role = Column(String)
     """The account role assigned. This can be 'AccountAdmin' or a user-defined role created by the Roles API. 
         Example: AccountAdmin"""
-    user = Column($ref -> User)
+    user = relationship('User')
     """The user the role is assigned to. See the Users API for details. 
         Example: None"""
     workflow_state = Column(String)
@@ -3124,7 +3450,7 @@ class Admin(Base):
 class OutcomeResult(Base):
     """A student's result for an outcome"""
     __tablename__ = 'outcome_result'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """A unique identifier for this result 
         Example: 42"""
     score = Column(Integer)
@@ -3133,66 +3459,82 @@ class OutcomeResult(Base):
     submitted_or_assessed_at = Column(DateTime)
     """The datetime the resulting OutcomeResult was submitted at, or absent that, when it was assessed. 
         Example: 2013-02-01T00:00:00-06:00"""
-    links = Column(PickleType)
+    links = relationship('Unknown')
     """Unique identifiers of objects associated with this result 
         Example: {'user': '3', 'learning_outcome': '97', 'alignment': '53'}"""
     percent = Column(Integer)
     """score's percent of maximum points possible for outcome, scaled to reflect any custom mastery levels that differ from the learning outcome 
         Example: 0.65"""
 
-@dataclass
-class OutcomeRollupScoreLinks:
-    outcome: Integer
-    """The id of the related outcome"""
 
-@dataclass
-class OutcomeRollupScore:
-    score: Integer
-    """The rollup score for the outcome, based on the student alignment scores related to the outcome. This could be null if the student has no related scores."""
-    count: Integer
-    """The number of alignment scores included in this rollup."""
-    links: $ref -> OutcomeRollupScoreLinks
-    """No Description Provided"""
+class OutcomeRollupScoreLinks(Base):
+    __tablename__ = 'outcome_rollup_score_links'
+    outcome = Column(Integer)
+    """The id of the related outcome 
+        Example: 42"""
 
-@dataclass
-class OutcomeRollupLinks:
-    course: Integer
-    """If an aggregate result was requested, the course field will be present. Otherwise, the user and section field will be present (Optional) The id of the course that this rollup applies to"""
-    user: Integer
-    """(Optional) The id of the user that this rollup applies to"""
-    section: Integer
-    """(Optional) The id of the section the user is in"""
 
-@dataclass
-class OutcomeRollup:
-    scores: $ref -> OutcomeRollupScore
-    """an array of OutcomeRollupScore objects"""
-    name: String
-    """The name of the resource for this rollup. For example, the user name."""
-    links: $ref -> OutcomeRollupLinks
-    """No Description Provided"""
+class OutcomeRollupScore(Base):
+    __tablename__ = 'outcome_rollup_score'
+    score = Column(Integer)
+    """The rollup score for the outcome, based on the student alignment scores related to the outcome. This could be null if the student has no related scores. 
+        Example: 3"""
+    count = Column(Integer)
+    """The number of alignment scores included in this rollup. 
+        Example: 6"""
+    links = relationship('OutcomeRollupScoreLinks')
+    """None 
+        Example: {'outcome': '42'}"""
+
+
+class OutcomeRollupLinks(Base):
+    __tablename__ = 'outcome_rollup_links'
+    course = Column(Integer)
+    """If an aggregate result was requested, the course field will be present. Otherwise, the user and section field will be present (Optional) The id of the course that this rollup applies to 
+        Example: 42"""
+    user = Column(Integer)
+    """(Optional) The id of the user that this rollup applies to 
+        Example: 42"""
+    section = Column(Integer)
+    """(Optional) The id of the section the user is in 
+        Example: 57"""
+
+
+class OutcomeRollup(Base):
+    __tablename__ = 'outcome_rollup'
+    scores = relationship('OutcomeRollupScore')
+    """an array of OutcomeRollupScore objects 
+        Example: None"""
+    name = Column(String)
+    """The name of the resource for this rollup. For example, the user name. 
+        Example: John Doe"""
+    links = relationship('OutcomeRollupLinks')
+    """None 
+        Example: {'course': 42, 'user': 42, 'section': 57}"""
 
 
 class OutcomePath(Base):
     """The full path to an outcome"""
     __tablename__ = 'outcome_path'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """A unique identifier for this outcome 
         Example: 42"""
-    parts = Column($ref -> OutcomePathPart)
+    parts = relationship('OutcomePathPart')
     """an array of OutcomePathPart objects 
         Example: None"""
 
-@dataclass
-class OutcomePathPart:
-    name: String
-    """The title of the outcome or outcome group"""
+
+class OutcomePathPart(Base):
+    """An outcome or outcome group"""
+    __tablename__ = 'outcome_path_part'
+    name = Column(String)
+    """The title of the outcome or outcome group 
+        Example: Spelling out numbers"""
 
 
 class SharedBrandConfig(Base):
-    """No Description Provided"""
     __tablename__ = 'shared_brand_config'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The shared_brand_config identifier. 
         Example: 987"""
     account_id = Column(String)
@@ -3211,38 +3553,52 @@ class SharedBrandConfig(Base):
     """When this was last updated 
         Example: 2012-07-13T10:55:20-06:00"""
 
-@dataclass
-class HistoryEntry:
-    asset_code: String
-    """The asset string for the item viewed"""
-    asset_name: String
-    """The name of the item"""
-    asset_icon: String
-    """The icon type shown for the item. One of 'icon-announcement', 'icon-assignment', 'icon-calendar-month', 'icon-discussion', 'icon-document', 'icon-download', 'icon-gradebook', 'icon-home', 'icon-message', 'icon-module', 'icon-outcomes', 'icon-quiz', 'icon-user', 'icon-syllabus'"""
-    asset_readable_category: String
-    """The associated category describing the asset_icon"""
-    context_type: String
-    """The type of context of the item visited. One of 'Course', 'Group', 'User', or 'Account'"""
-    context_id: Integer
-    """The id of the context, if applicable"""
-    context_name: String
-    """The name of the context"""
-    visited_url: String
-    """The URL of the item"""
-    visited_at: DateTime
-    """When the page was visited"""
-    interaction_seconds: Integer
-    """The estimated time spent on the page in seconds"""
 
-@dataclass
-class OutcomeImportData:
-    import_type: String
-    """The type of outcome import"""
+class HistoryEntry(Base):
+    """Information about a recently visited item or page in Canvas"""
+    __tablename__ = 'history_entry'
+    asset_code = Column(String)
+    """The asset string for the item viewed 
+        Example: assignment_123"""
+    asset_name = Column(String)
+    """The name of the item 
+        Example: Test Assignment"""
+    asset_icon = Column(String)
+    """The icon type shown for the item. One of 'icon-announcement', 'icon-assignment', 'icon-calendar-month', 'icon-discussion', 'icon-document', 'icon-download', 'icon-gradebook', 'icon-home', 'icon-message', 'icon-module', 'icon-outcomes', 'icon-quiz', 'icon-user', 'icon-syllabus' 
+        Example: icon-assignment"""
+    asset_readable_category = Column(String)
+    """The associated category describing the asset_icon 
+        Example: Assignment"""
+    context_type = Column(String)
+    """The type of context of the item visited. One of 'Course', 'Group', 'User', or 'Account' 
+        Example: Course"""
+    context_id = Column(Integer)
+    """The id of the context, if applicable 
+        Example: 123"""
+    context_name = Column(String)
+    """The name of the context 
+        Example: Something 101"""
+    visited_url = Column(String)
+    """The URL of the item 
+        Example: https://canvas.example.com/courses/123/assignments/456"""
+    visited_at = Column(DateTime)
+    """When the page was visited 
+        Example: 2019-08-01T19:49:47Z"""
+    interaction_seconds = Column(Integer)
+    """The estimated time spent on the page in seconds 
+        Example: 400"""
+
+
+class OutcomeImportData(Base):
+    __tablename__ = 'outcome_import_data'
+    import_type = Column(String)
+    """The type of outcome import 
+        Example: instructure_csv"""
 
 
 class OutcomeImport(Base):
     __tablename__ = 'outcome_import'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The unique identifier for the outcome import. 
         Example: 1"""
     learning_outcome_group_id = Column(Integer)
@@ -3257,50 +3613,60 @@ class OutcomeImport(Base):
     updated_at = Column(DateTime)
     """The date the outcome import was last updated. 
         Example: 2013-12-02T00:03:21-06:00"""
-    workflowStateAllowedValues = enum.Enum('workflowStateAllowedValues', ['created', 'importing', 'succeeded', 'failed'])
+    workflowStateEnum = enum.Enum('workflowStateEnum', ['created', 'importing', 'succeeded', 'failed'])
     """Enum for the allowed values of the workflow_state field"""
-    workflow_state = Column(Enum(workflowStateAllowedValues))
+    workflow_state = Column(Enum(workflowStateEnum))
     """The current state of the outcome import.
  - 'created': The outcome import has been created.
  - 'importing': The outcome import is currently processing.
  - 'succeeded': The outcome import has completed successfully.
  - 'failed': The outcome import failed. 
         Example: imported"""
-    data = Column($ref -> OutcomeImportData)
+    data = relationship('OutcomeImportData')
     """See the OutcomeImportData specification above. 
         Example: None"""
     progress = Column(String)
     """The progress of the outcome import. 
         Example: 100"""
-    user = Column($ref -> User)
+    user = relationship('User')
     """The user that initiated the outcome_import. See the Users API for details. 
         Example: None"""
-    processing_errors = Column(Array : Array : PickleType)
+    processing_errors = Column(JsonObject)
+"""List[List[Unknown]]"""
     """An array of row number / error message pairs. Returns the first 25 errors. 
         Example: [[1, 'Missing required fields: title']]"""
 
-@dataclass
-class ErrorReport:
-    subject: String
-    """The users problem summary, like an email subject line"""
-    comments: String
-    """long form documentation of what was witnessed"""
-    user_perceived_severity: String
-    """categorization of how bad the user thinks the problem is.  Should be one of [just_a_comment, not_urgent, workaround_possible, blocks_what_i_need_to_do, extreme_critical_emergency]."""
-    email: String
-    """the email address of the reporting user"""
-    url: String
-    """URL of the page on which the error was reported"""
-    context_asset_string: String
-    """string describing the asset being interacted with at the time of error.  Formatted '[type]_[id]'"""
-    user_roles: String
-    """comma seperated list of roles the reporting user holds.  Can be one [student], or many [teacher,admin]"""
+
+class ErrorReport(Base):
+    """A collection of information around a specific notification of a problem"""
+    __tablename__ = 'error_report'
+    subject = Column(String)
+    """The users problem summary, like an email subject line 
+        Example: File upload breaking"""
+    comments = Column(String)
+    """long form documentation of what was witnessed 
+        Example: When I went to upload a .mov file to my files page, I got an error.  Retrying didn't help, other file types seem ok"""
+    user_perceived_severity = Column(String)
+    """categorization of how bad the user thinks the problem is.  Should be one of [just_a_comment, not_urgent, workaround_possible, blocks_what_i_need_to_do, extreme_critical_emergency]. 
+        Example: just_a_comment"""
+    email = Column(String)
+    """the email address of the reporting user 
+        Example: name@example.com"""
+    url = Column(String)
+    """URL of the page on which the error was reported 
+        Example: https://canvas.instructure.com/courses/1"""
+    context_asset_string = Column(String)
+    """string describing the asset being interacted with at the time of error.  Formatted '[type]_[id]' 
+        Example: user_1"""
+    user_roles = Column(String)
+    """comma seperated list of roles the reporting user holds.  Can be one [student], or many [teacher,admin] 
+        Example: user,teacher,admin"""
 
 
 class Appointment(Base):
     """Date and time for an appointment"""
     __tablename__ = 'appointment'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The appointment identifier. 
         Example: 987"""
     start_at = Column(DateTime)
@@ -3313,7 +3679,7 @@ class Appointment(Base):
 
 class AppointmentGroup(Base):
     __tablename__ = 'appointment_group'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The ID of the appointment group 
         Example: 543"""
     title = Column(String)
@@ -3337,18 +3703,21 @@ class AppointmentGroup(Base):
     participant_count = Column(Integer)
     """The number of participant who have reserved slots (see include[] argument) 
         Example: 2"""
-    reserved_times = Column(Array : $ref -> Appointment)
+    reserved_times = Column(JsonObject)
+"""List[Appointment]"""
     """The start and end times of slots reserved by the current user as well as the id of the calendar event for the reservation (see include[] argument) 
         Example: [{'id': 987, 'start_at': '2012-07-20T15:00:00-06:00', 'end_at': '2012-07-20T15:00:00-06:00'}]"""
-    context_codes = Column(Array : String)
+    context_codes = Column(JsonObject)
+"""List[str]"""
     """The context codes (i.e. courses) this appointment group belongs to. Only people in these courses will be eligible to sign up. 
         Example: ['course_123']"""
-    sub_context_codes = Column(Array : Integer)
+    sub_context_codes = Column(JsonObject)
+"""List[int]"""
     """The sub-context codes (i.e. course sections and group categories) this appointment group is restricted to 
         Example: ['course_section_234']"""
-    workflowStateAllowedValues = enum.Enum('workflowStateAllowedValues', ['pending', 'active', 'deleted'])
+    workflowStateEnum = enum.Enum('workflowStateEnum', ['pending', 'active', 'deleted'])
     """Enum for the allowed values of the workflow_state field"""
-    workflow_state = Column(Enum(workflowStateAllowedValues))
+    workflow_state = Column(Enum(workflowStateEnum))
     """Current state of the appointment group ('pending', 'active' or 'deleted'). 'pending' indicates that it has not been published yet and is invisible to participants. 
         Example: active"""
     requiring_action = Column(Boolean)
@@ -3357,10 +3726,12 @@ class AppointmentGroup(Base):
     appointments_count = Column(Integer)
     """Number of time slots in this appointment group 
         Example: 2"""
-    appointments = Column(Array : $ref -> CalendarEvent)
+    appointments = Column(JsonObject)
+"""List[CalendarEvent]"""
     """Calendar Events representing the time slots (see include[] argument) Refer to the Calendar Events API for more information 
         Example: None"""
-    new_appointments = Column(Array : $ref -> CalendarEvent)
+    new_appointments = Column(JsonObject)
+"""List[CalendarEvent]"""
     """Newly created time slots (same format as appointments above). Only returned in Create/Update responses where new time slots have been added 
         Example: None"""
     max_appointments_per_participant = Column(Integer)
@@ -3372,14 +3743,14 @@ class AppointmentGroup(Base):
     participants_per_appointment = Column(Integer)
     """Maximum number of participants that may register for each time slot, or null if no limit 
         Example: 1"""
-    participantVisibilityAllowedValues = enum.Enum('participantVisibilityAllowedValues', ['private', 'protected'])
+    participantVisibilityEnum = enum.Enum('participantVisibilityEnum', ['private', 'protected'])
     """Enum for the allowed values of the participant_visibility field"""
-    participant_visibility = Column(Enum(participantVisibilityAllowedValues))
+    participant_visibility = Column(Enum(participantVisibilityEnum))
     """'private' means participants cannot see who has signed up for a particular time slot, 'protected' means that they can 
         Example: private"""
-    participantTypeAllowedValues = enum.Enum('participantTypeAllowedValues', ['User', 'Group'])
+    participantTypeEnum = enum.Enum('participantTypeEnum', ['User', 'Group'])
     """Enum for the allowed values of the participant_type field"""
-    participant_type = Column(Enum(participantTypeAllowedValues))
+    participant_type = Column(Enum(participantTypeEnum))
     """Indicates how participants sign up for the appointment group, either as individuals ('User') or in student groups ('Group'). Related to sub_context_codes (i.e. 'Group' signups always have a single group category) 
         Example: User"""
     url = Column(String)
@@ -3395,25 +3766,29 @@ class AppointmentGroup(Base):
     """When the appointment group was last updated 
         Example: 2012-07-13T10:55:20-06:00"""
 
-@dataclass
-class ColumnDatum:
-    content: String
-    """No Description Provided"""
-    user_id: Integer
-    """No Description Provided"""
+
+class ColumnDatum(Base):
+    """ColumnDatum objects contain the entry for a column for each user."""
+    __tablename__ = 'column_datum'
+    content = Column(String)
+    """None 
+        Example: Nut allergy"""
+    user_id = Column(Integer)
+    """None 
+        Example: 2"""
 
 
 class BlackoutDate(Base):
     """Blackout dates are used to prevent scheduling assignments on a given date in course pacing."""
     __tablename__ = 'blackout_date'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """the ID of the blackout date 
         Example: 1"""
     context_id = Column(Integer)
     """the context owning the blackout date 
         Example: 1"""
     context_type = Column(String)
-    """No Description Provided 
+    """None 
         Example: Course"""
     start_date = Column(DateTime)
     """the start date of the blackout date 
@@ -3428,7 +3803,7 @@ class BlackoutDate(Base):
 
 class WebZipExport(Base):
     __tablename__ = 'web_zip_export'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """the unique identifier for the export 
         Example: 101"""
     created_at = Column(DateTime)
@@ -3437,7 +3812,7 @@ class WebZipExport(Base):
     updated_at = Column(DateTime)
     """the date and time this export was last updated 
         Example: 2014-01-01T00:01:00Z"""
-    zip_attachment = Column($ref -> File)
+    zip_attachment = relationship('File')
     """attachment api object for the export web zip (not present until the export completes) 
         Example: {'url': 'https://example.com/api/v1/attachments/789?download_frd=1&verifier=bG9sY2F0cyEh'}"""
     progress_id = Column(Integer)
@@ -3455,9 +3830,9 @@ class WebZipExport(Base):
     content_export_id = Column(Integer)
     """The ID of the content export used in the offline export 
         Example: 5"""
-    workflowStateAllowedValues = enum.Enum('workflowStateAllowedValues', ['created', 'exporting', 'exported', 'generating', 'generated', 'failed'])
+    workflowStateEnum = enum.Enum('workflowStateEnum', ['created', 'exporting', 'exported', 'generating', 'generated', 'failed'])
     """Enum for the allowed values of the workflow_state field"""
-    workflow_state = Column(Enum(workflowStateAllowedValues))
+    workflow_state = Column(Enum(workflowStateEnum))
     """Current state of the web zip export: created exporting exported generating generated failed 
         Example: exported"""
 
@@ -3465,7 +3840,7 @@ class WebZipExport(Base):
 class PlannerOverride(Base):
     """User-controlled setting for whether an item should be displayed on the planner or not"""
     __tablename__ = 'planner_override'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The ID of the planner override 
         Example: 234"""
     plannable_type = Column(String)
@@ -3502,18 +3877,18 @@ class PlannerOverride(Base):
 
 class ContentExport(Base):
     __tablename__ = 'content_export'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """the unique identifier for the export 
         Example: 101"""
     created_at = Column(DateTime)
     """the date and time this export was requested 
         Example: 2014-01-01T00:00:00Z"""
-    exportTypeAllowedValues = enum.Enum('exportTypeAllowedValues', ['common_cartridge', 'qti'])
+    exportTypeEnum = enum.Enum('exportTypeEnum', ['common_cartridge', 'qti'])
     """Enum for the allowed values of the export_type field"""
-    export_type = Column(Enum(exportTypeAllowedValues))
+    export_type = Column(Enum(exportTypeEnum))
     """the type of content migration: 'common_cartridge' or 'qti' 
         Example: common_cartridge"""
-    attachment = Column($ref -> File)
+    attachment = relationship('File')
     """attachment api object for the export package (not present before the export completes or after it becomes unavailable for download.) 
         Example: {'url': 'https://example.com/api/v1/attachments/789?download_frd=1&verifier=bG9sY2F0cyEh'}"""
     progress_url = Column(String)
@@ -3522,25 +3897,30 @@ class ContentExport(Base):
     user_id = Column(Integer)
     """The ID of the user who started the export 
         Example: 4"""
-    workflowStateAllowedValues = enum.Enum('workflowStateAllowedValues', ['created', 'exporting', 'exported', 'failed'])
+    workflowStateEnum = enum.Enum('workflowStateEnum', ['created', 'exporting', 'exported', 'failed'])
     """Enum for the allowed values of the workflow_state field"""
-    workflow_state = Column(Enum(workflowStateAllowedValues))
+    workflow_state = Column(Enum(workflowStateEnum))
     """Current state of the content migration: created exporting exported failed 
         Example: exported"""
 
-@dataclass
-class GradingRules:
-    drop_lowest: Integer
-    """Number of lowest scores to be dropped for each user."""
-    drop_highest: Integer
-    """Number of highest scores to be dropped for each user."""
-    never_drop: Array : Integer
-    """Assignment IDs that should never be dropped."""
+
+class GradingRules(Base):
+    __tablename__ = 'grading_rules'
+    drop_lowest = Column(Integer)
+    """Number of lowest scores to be dropped for each user. 
+        Example: 1"""
+    drop_highest = Column(Integer)
+    """Number of highest scores to be dropped for each user. 
+        Example: 1"""
+    never_drop = Column(JsonObject)
+"""List[int]"""
+    """Assignment IDs that should never be dropped. 
+        Example: [33, 17, 24]"""
 
 
 class AssignmentGroup(Base):
     __tablename__ = 'assignment_group'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """the id of the Assignment Group 
         Example: 1"""
     name = Column(String)
@@ -3555,45 +3935,56 @@ class AssignmentGroup(Base):
     sis_source_id = Column(String)
     """the sis source id of the Assignment Group 
         Example: 1234"""
-    integration_data = Column(PickleType)
+    integration_data = relationship('Unknown')
     """the integration data of the Assignment Group 
         Example: {'5678': '0954'}"""
-    assignments = Column(Array : Integer)
+    assignments = Column(JsonObject)
+"""List[int]"""
     """the assignments in this Assignment Group (see the Assignment API for a detailed list of fields) 
         Example: None"""
-    rules = Column($ref -> GradingRules)
+    rules = relationship('GradingRules')
     """the grading rules that this Assignment Group has 
         Example: None"""
 
-@dataclass
-class ExternalToolTagAttributes:
-    url: String
-    """URL to the external tool"""
-    new_tab: Boolean
-    """Whether or not there is a new tab for the external tool"""
-    resource_link_id: String
-    """the identifier for this tool_tag"""
 
-@dataclass
-class LockInfo:
-    asset_string: String
-    """Asset string for the object causing the lock"""
-    unlock_at: DateTime
-    """(Optional) Time at which this was/will be unlocked. Must be before the due date."""
-    lock_at: DateTime
-    """(Optional) Time at which this was/will be locked. Must be after the due date."""
-    context_module: String
-    """(Optional) Context module causing the lock."""
-    manually_locked: Boolean
-    """No Description Provided"""
+class ExternalToolTagAttributes(Base):
+    __tablename__ = 'external_tool_tag_attributes'
+    url = Column(String)
+    """URL to the external tool 
+        Example: http://instructure.com"""
+    new_tab = Column(Boolean)
+    """Whether or not there is a new tab for the external tool 
+        Example: None"""
+    resource_link_id = Column(String)
+    """the identifier for this tool_tag 
+        Example: ab81173af98b8c33e66a"""
+
+
+class LockInfo(Base):
+    __tablename__ = 'lock_info'
+    asset_string = Column(String)
+    """Asset string for the object causing the lock 
+        Example: assignment_4"""
+    unlock_at = Column(DateTime)
+    """(Optional) Time at which this was/will be unlocked. Must be before the due date. 
+        Example: 2013-01-01T00:00:00-06:00"""
+    lock_at = Column(DateTime)
+    """(Optional) Time at which this was/will be locked. Must be after the due date. 
+        Example: 2013-02-01T00:00:00-06:00"""
+    context_module = Column(String)
+    """(Optional) Context module causing the lock. 
+        Example: {}"""
+    manually_locked = Column(Boolean)
+    """None 
+        Example: True"""
 
 
 class RubricCriteria(Base):
     __tablename__ = 'rubric_criteria'
     points = Column(Integer)
-    """No Description Provided 
+    """None 
         Example: 10"""
-    id = Column(String, primary_key=True)
+    id = Column(String)
     """The id of rubric criteria. 
         Example: crit1"""
     learning_outcome_id = Column(String)
@@ -3603,33 +3994,34 @@ class RubricCriteria(Base):
     """(Optional) The 3rd party vendor's GUID for the outcome this criteria references, if any. 
         Example: abdsfjasdfne3jsdfn2"""
     description = Column(String)
-    """No Description Provided 
+    """None 
         Example: Criterion 1"""
     long_description = Column(String)
-    """No Description Provided 
+    """None 
         Example: Criterion 1 more details"""
     criterion_use_range = Column(Boolean)
-    """No Description Provided 
+    """None 
         Example: True"""
-    ratings = Column(Array : $ref -> RubricRating)
-    """No Description Provided 
+    ratings = Column(JsonObject)
+"""List[RubricRating]"""
+    """None 
         Example: None"""
     ignore_for_scoring = Column(Boolean)
-    """No Description Provided 
+    """None 
         Example: True"""
 
 
 class AssignmentDate(Base):
     """Object representing a due date for an assignment or quiz. If the due date came from an assignment override, it will have an 'id' field."""
     __tablename__ = 'assignment_date'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """(Optional, missing if 'base' is present) id of the assignment override this date represents 
         Example: 1"""
     base = Column(Boolean)
     """(Optional, present if 'id' is missing) whether this date represents the assignment's or quiz's default due date 
         Example: True"""
     title = Column(String)
-    """No Description Provided 
+    """None 
         Example: Summer Session"""
     due_at = Column(DateTime)
     """The due date for the assignment. Must be between the unlock date and the lock date if there are lock dates 
@@ -3641,45 +4033,63 @@ class AssignmentDate(Base):
     """The lock date for the assignment. Must be after the due date if there is a due date. 
         Example: 2013-08-31T23:59:00-06:00"""
 
-@dataclass
-class TurnitinSettings:
-    originality_report_visibility: String
-    """No Description Provided"""
-    s_paper_check: Boolean
-    """No Description Provided"""
-    internet_check: Boolean
-    """No Description Provided"""
-    journal_check: Boolean
-    """No Description Provided"""
-    exclude_biblio: Boolean
-    """No Description Provided"""
-    exclude_quoted: Boolean
-    """No Description Provided"""
-    exclude_small_matches_type: String
-    """No Description Provided"""
-    exclude_small_matches_value: Integer
-    """No Description Provided"""
 
-@dataclass
-class NeedsGradingCount:
-    section_id: String
-    """The section ID"""
-    needs_grading_count: Integer
-    """Number of submissions that need grading"""
+class TurnitinSettings(Base):
+    __tablename__ = 'turnitin_settings'
+    originality_report_visibility = Column(String)
+    """None 
+        Example: after_grading"""
+    s_paper_check = Column(Boolean)
+    """None 
+        Example: None"""
+    internet_check = Column(Boolean)
+    """None 
+        Example: None"""
+    journal_check = Column(Boolean)
+    """None 
+        Example: None"""
+    exclude_biblio = Column(Boolean)
+    """None 
+        Example: None"""
+    exclude_quoted = Column(Boolean)
+    """None 
+        Example: None"""
+    exclude_small_matches_type = Column(String)
+    """None 
+        Example: percent"""
+    exclude_small_matches_value = Column(Integer)
+    """None 
+        Example: 50"""
 
-@dataclass
-class ScoreStatistic:
-    min: Integer
-    """Min score"""
-    max: Integer
-    """Max score"""
-    mean: Integer
-    """Mean score"""
+
+class NeedsGradingCount(Base):
+    """Used by Assignment model"""
+    __tablename__ = 'needs_grading_count'
+    section_id = Column(String)
+    """The section ID 
+        Example: 123456"""
+    needs_grading_count = Column(Integer)
+    """Number of submissions that need grading 
+        Example: 5"""
+
+
+class ScoreStatistic(Base):
+    """Used by Assignment model"""
+    __tablename__ = 'score_statistic'
+    min = Column(Integer)
+    """Min score 
+        Example: 1"""
+    max = Column(Integer)
+    """Max score 
+        Example: 10"""
+    mean = Column(Integer)
+    """Mean score 
+        Example: 6"""
 
 
 class Assignment(Base):
     __tablename__ = 'assignment'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """the ID of the assignment 
         Example: 4"""
     name = Column(String)
@@ -3706,7 +4116,8 @@ class Assignment(Base):
     has_overrides = Column(Boolean)
     """whether this assignment has overrides 
         Example: True"""
-    all_dates = Column(Array : $ref -> AssignmentDate)
+    all_dates = Column(JsonObject)
+"""List[AssignmentDate]"""
     """(Optional) all dates associated with the assignment, if applicable 
         Example: None"""
     course_id = Column(Integer)
@@ -3724,7 +4135,8 @@ class Assignment(Base):
     due_date_required = Column(Boolean)
     """Boolean flag indicating whether the assignment requires a due date based on the account level setting 
         Example: True"""
-    allowed_extensions = Column(Array : String)
+    allowed_extensions = Column(JsonObject)
+"""List[str]"""
     """Allowed file extensions, which take effect if submission_types includes 'online_upload'. 
         Example: ['docx', 'ppt']"""
     max_name_length = Column(Integer)
@@ -3736,13 +4148,13 @@ class Assignment(Base):
     vericite_enabled = Column(Boolean)
     """Boolean flag indicating whether or not VeriCite has been enabled for the assignment. NOTE: This flag will not appear unless your account has the VeriCite plugin available 
         Example: True"""
-    turnitin_settings = Column($ref -> TurnitinSettings)
+    turnitin_settings = relationship('TurnitinSettings')
     """Settings to pass along to turnitin to control what kinds of matches should be considered. originality_report_visibility can be 'immediate', 'after_grading', 'after_due_date', or 'never' exclude_small_matches_type can be null, 'percent', 'words' exclude_small_matches_value: - if type is null, this will be null also - if type is 'percent', this will be a number between 0 and 100 representing match size to exclude as a percentage of the document size. - if type is 'words', this will be number > 0 representing how many words a match must contain for it to be considered NOTE: This flag will not appear unless your account has the Turnitin plugin available 
         Example: None"""
     grade_group_students_individually = Column(Boolean)
     """If this is a group assignment, boolean flag indicating whether or not students will be graded individually. 
         Example: None"""
-    external_tool_tag_attributes = Column($ref -> ExternalToolTagAttributes)
+    external_tool_tag_attributes = relationship('ExternalToolTagAttributes')
     """(Optional) assignment's settings for external tools if submission_types include 'external_tool'. Only url and new_tab are included (new_tab defaults to false).  Use the 'External Tools' API if you need more information about an external tool. 
         Example: None"""
     peer_reviews = Column(Boolean)
@@ -3766,7 +4178,8 @@ class Assignment(Base):
     needs_grading_count = Column(Integer)
     """if the requesting user has grading rights, the number of submissions that need grading. 
         Example: 17"""
-    needs_grading_count_by_section = Column(Array : $ref -> NeedsGradingCount)
+    needs_grading_count_by_section = Column(JsonObject)
+"""List[NeedsGradingCount]"""
     """if the requesting user has grading rights and the 'needs_grading_count_by_section' flag is specified, the number of submissions that need grading split out by section. NOTE: This key is NOT present unless you pass the 'needs_grading_count_by_section' argument as true.  ANOTHER NOTE: it's possible to be enrolled in multiple sections, and if a student is setup that way they will show an assignment that needs grading in multiple sections (effectively the count will be duplicated between sections) 
         Example: [{'section_id': '123456', 'needs_grading_count': 5}, {'section_id': '654321', 'needs_grading_count': 0}]"""
     position = Column(Integer)
@@ -3778,23 +4191,23 @@ class Assignment(Base):
     integration_id = Column(String)
     """(optional, Third Party unique identifier for Assignment) 
         Example: 12341234"""
-    integration_data = Column(PickleType)
+    integration_data = relationship('Unknown')
     """(optional, Third Party integration data for assignment) 
         Example: {'5678': '0954'}"""
     points_possible = Column(Integer)
     """the maximum points possible for the assignment 
         Example: 12.0"""
-    submissionTypesAllowedValues = enum.Enum('submissionTypesAllowedValues', ['discussion_topic', 'online_quiz', 'on_paper', 'not_graded', 'none', 'external_tool', 'online_text_entry', 'online_url', 'online_upload', 'media_recording', 'student_annotation'])
+    submissionTypesEnum = enum.Enum('submissionTypesEnum', ['discussion_topic', 'online_quiz', 'on_paper', 'not_graded', 'none', 'external_tool', 'online_text_entry', 'online_url', 'online_upload', 'media_recording', 'student_annotation'])
     """Enum for the allowed values of the submission_types field"""
-    submission_types = Column(Array : String(submissionTypesAllowedValues))
+    submission_types = Column(Enum(submissionTypesEnum))
     """the types of submissions allowed for this assignment list containing one or more of the following: 'discussion_topic', 'online_quiz', 'on_paper', 'none', 'external_tool', 'online_text_entry', 'online_url', 'online_upload', 'media_recording', 'student_annotation' 
         Example: ['online_text_entry']"""
     has_submitted_submissions = Column(Boolean)
     """If true, the assignment has been submitted to by at least one student 
         Example: True"""
-    gradingTypeAllowedValues = enum.Enum('gradingTypeAllowedValues', ['pass_fail', 'percent', 'letter_grade', 'gpa_scale', 'points'])
+    gradingTypeEnum = enum.Enum('gradingTypeEnum', ['pass_fail', 'percent', 'letter_grade', 'gpa_scale', 'points'])
     """Enum for the allowed values of the grading_type field"""
-    grading_type = Column(Enum(gradingTypeAllowedValues))
+    grading_type = Column(Enum(gradingTypeEnum))
     """The type of grading the assignment receives; one of 'pass_fail', 'percent', 'letter_grade', 'gpa_scale', 'points' 
         Example: points"""
     grading_standard_id = Column(Integer)
@@ -3812,7 +4225,7 @@ class Assignment(Base):
     locked_for_user = Column(Boolean)
     """Whether or not this is locked for the user. 
         Example: None"""
-    lock_info = Column($ref -> LockInfo)
+    lock_info = relationship('LockInfo')
     """(Optional) Information for the user about the lock. Present when locked_for_user is true. 
         Example: None"""
     lock_explanation = Column(String)
@@ -3824,7 +4237,7 @@ class Assignment(Base):
     anonymous_submissions = Column(Boolean)
     """(Optional) whether anonymous submissions are accepted (applies only to quiz assignments) 
         Example: None"""
-    discussion_topic = Column($ref -> DiscussionTopic)
+    discussion_topic = relationship('DiscussionTopic')
     """(Optional) the DiscussionTopic associated with the assignment, if applicable 
         Example: None"""
     freeze_on_copy = Column(Boolean)
@@ -3833,10 +4246,11 @@ class Assignment(Base):
     frozen = Column(Boolean)
     """(Optional) Boolean indicating if assignment is frozen for the calling user. NOTE: This field will only be present if the AssignmentFreezer plugin is available for your account. 
         Example: None"""
-    frozen_attributes = Column(Array : String)
+    frozen_attributes = Column(JsonObject)
+"""List[str]"""
     """(Optional) Array of frozen attributes for the assignment. Only account administrators currently have permission to change an attribute in this list. Will be empty if no attributes are frozen for this assignment. Possible frozen attributes are: title, description, lock_at, points_possible, grading_type, submission_types, assignment_group_id, allowed_extensions, group_category_id, notify_of_update, peer_reviews NOTE: This field will only be present if the AssignmentFreezer plugin is available for your account. 
         Example: ['title']"""
-    submission = Column($ref -> Submission)
+    submission = relationship('Submission')
     """(Optional) If 'submission' is included in the 'include' parameter, includes a Submission object that represents the current user's (user who is requesting information from the api) current submission for the assignment. See the Submissions API for an example response. If the user does not have a submission, this key will be absent. 
         Example: None"""
     use_rubric_for_grading = Column(Boolean)
@@ -3845,13 +4259,16 @@ class Assignment(Base):
     rubric_settings = Column(String)
     """(Optional) An object describing the basic attributes of the rubric, including the point total. Included if there is an associated rubric. 
         Example: {"points_possible"=>12}"""
-    rubric = Column(Array : $ref -> RubricCriteria)
+    rubric = Column(JsonObject)
+"""List[RubricCriteria]"""
     """(Optional) A list of scoring criteria and ratings for each rubric criterion. Included if there is an associated rubric. 
         Example: None"""
-    assignment_visibility = Column(Array : Integer)
+    assignment_visibility = Column(JsonObject)
+"""List[int]"""
     """(Optional) If 'assignment_visibility' is included in the 'include' parameter, includes an array of student IDs who can see this assignment. 
         Example: [137, 381, 572]"""
-    overrides = Column(Array : $ref -> AssignmentOverride)
+    overrides = Column(JsonObject)
+"""List[AssignmentOverride]"""
     """(Optional) If 'overrides' is included in the 'include' parameter, includes an array of assignment override objects. 
         Example: None"""
     omit_from_final_grade = Column(Boolean)
@@ -3884,7 +4301,7 @@ class Assignment(Base):
     post_manually = Column(Boolean)
     """Whether the assignment has manual posting enabled. Only relevant for courses using New Gradebook. 
         Example: True"""
-    score_statistics = Column($ref -> ScoreStatistic)
+    score_statistics = relationship('ScoreStatistic')
     """(Optional) If 'score_statistics' and 'submission' are included in the 'include' parameter and statistics are available, includes the min, max, and mode for this assignment 
         Example: None"""
     can_submit = Column(Boolean)
@@ -3906,98 +4323,141 @@ class Assignment(Base):
     """(Optional, Deprecated) Boolean indicating whether notifications are muted for this assignment. 
         Example: None"""
 
-@dataclass
-class SisImportData:
-    import_type: String
-    """The type of SIS import"""
-    supplied_batches: Array : String
-    """Which files were included in the SIS import"""
-    counts: $ref -> SisImportCounts
-    """The number of rows processed for each type of import"""
 
-@dataclass
-class SisImportStatistic:
-    created: Integer
-    """This is the number of items that were created."""
-    concluded: Integer
-    """This is the number of items that marked as completed. This only applies to courses and enrollments."""
-    deactivated: Integer
-    """This is the number of Enrollments that were marked as 'inactive'. This only applies to enrollments."""
-    restored: Integer
-    """This is the number of items that were set to an active state from a completed, inactive, or deleted state."""
-    deleted: Integer
-    """This is the number of items that were deleted."""
+class SisImportData(Base):
+    __tablename__ = 'sis_import_data'
+    import_type = Column(String)
+    """The type of SIS import 
+        Example: instructure_csv"""
+    supplied_batches = Column(JsonObject)
+"""List[str]"""
+    """Which files were included in the SIS import 
+        Example: ['term', 'course', 'section', 'user', 'enrollment']"""
+    counts = relationship('SisImportCounts')
+    """The number of rows processed for each type of import 
+        Example: None"""
 
-@dataclass
-class SisImportStatistics:
-    total_state_changes: Integer
-    """This is the total number of items that were changed in the sis import. There are a few caveats that can cause this number to not add up to the individual counts. There are some state changes that happen that have no impact to the object. An example would be changing a course from 'created' to 'claimed'. Both of these would be considered an active course, but would increment this counter. In this example the course would not increment the created or restored counters for course statistic."""
-    Account: $ref -> SisImportStatistic
-    """This contains that statistics for accounts."""
-    EnrollmentTerm: $ref -> SisImportStatistic
-    """This contains that statistics for terms."""
-    CommunicationChannel: $ref -> SisImportStatistic
-    """This contains that statistics for communication channels. This is an indirect effect from creating or deleting a user."""
-    AbstractCourse: $ref -> SisImportStatistic
-    """This contains that statistics for abstract courses."""
-    Course: $ref -> SisImportStatistic
-    """This contains that statistics for courses."""
-    CourseSection: $ref -> SisImportStatistic
-    """This contains that statistics for course sections."""
-    Enrollment: $ref -> SisImportStatistic
-    """This contains that statistics for enrollments."""
-    GroupCategory: $ref -> SisImportStatistic
-    """This contains that statistics for group categories."""
-    Group: $ref -> SisImportStatistic
-    """This contains that statistics for groups."""
-    GroupMembership: $ref -> SisImportStatistic
-    """This contains that statistics for group memberships. This can be a direct impact from the import or indirect from an enrollment being deleted."""
-    Pseudonym: $ref -> SisImportStatistic
-    """This contains that statistics for pseudonyms. Pseudonyms are logins for users, and are the object that ties an enrollment to a user. This would be impacted from the user importer. """
-    UserObserver: $ref -> SisImportStatistic
-    """This contains that statistics for user observers."""
-    AccountUser: $ref -> SisImportStatistic
-    """This contains that statistics for account users."""
 
-@dataclass
-class SisImportCounts:
-    accounts: Integer
-    """No Description Provided"""
-    terms: Integer
-    """No Description Provided"""
-    abstract_courses: Integer
-    """No Description Provided"""
-    courses: Integer
-    """No Description Provided"""
-    sections: Integer
-    """No Description Provided"""
-    xlists: Integer
-    """No Description Provided"""
-    users: Integer
-    """No Description Provided"""
-    enrollments: Integer
-    """No Description Provided"""
-    groups: Integer
-    """No Description Provided"""
-    group_memberships: Integer
-    """No Description Provided"""
-    grade_publishing_results: Integer
-    """No Description Provided"""
-    batch_courses_deleted: Integer
-    """the number of courses that were removed because they were not included in the batch for batch_mode imports. Only included if courses were deleted"""
-    batch_sections_deleted: Integer
-    """the number of sections that were removed because they were not included in the batch for batch_mode imports. Only included if sections were deleted"""
-    batch_enrollments_deleted: Integer
-    """the number of enrollments that were removed because they were not included in the batch for batch_mode imports. Only included if enrollments were deleted"""
-    error_count: Integer
-    """No Description Provided"""
-    warning_count: Integer
-    """No Description Provided"""
+class SisImportStatistic(Base):
+    __tablename__ = 'sis_import_statistic'
+    created = Column(Integer)
+    """This is the number of items that were created. 
+        Example: 18"""
+    concluded = Column(Integer)
+    """This is the number of items that marked as completed. This only applies to courses and enrollments. 
+        Example: 3"""
+    deactivated = Column(Integer)
+    """This is the number of Enrollments that were marked as 'inactive'. This only applies to enrollments. 
+        Example: 1"""
+    restored = Column(Integer)
+    """This is the number of items that were set to an active state from a completed, inactive, or deleted state. 
+        Example: 2"""
+    deleted = Column(Integer)
+    """This is the number of items that were deleted. 
+        Example: 40"""
+
+
+class SisImportStatistics(Base):
+    __tablename__ = 'sis_import_statistics'
+    total_state_changes = Column(Integer)
+    """This is the total number of items that were changed in the sis import. There are a few caveats that can cause this number to not add up to the individual counts. There are some state changes that happen that have no impact to the object. An example would be changing a course from 'created' to 'claimed'. Both of these would be considered an active course, but would increment this counter. In this example the course would not increment the created or restored counters for course statistic. 
+        Example: 382"""
+    Account = relationship('SisImportStatistic')
+    """This contains that statistics for accounts. 
+        Example: None"""
+    EnrollmentTerm = relationship('SisImportStatistic')
+    """This contains that statistics for terms. 
+        Example: None"""
+    CommunicationChannel = relationship('SisImportStatistic')
+    """This contains that statistics for communication channels. This is an indirect effect from creating or deleting a user. 
+        Example: None"""
+    AbstractCourse = relationship('SisImportStatistic')
+    """This contains that statistics for abstract courses. 
+        Example: None"""
+    Course = relationship('SisImportStatistic')
+    """This contains that statistics for courses. 
+        Example: None"""
+    CourseSection = relationship('SisImportStatistic')
+    """This contains that statistics for course sections. 
+        Example: None"""
+    Enrollment = relationship('SisImportStatistic')
+    """This contains that statistics for enrollments. 
+        Example: None"""
+    GroupCategory = relationship('SisImportStatistic')
+    """This contains that statistics for group categories. 
+        Example: None"""
+    Group = relationship('SisImportStatistic')
+    """This contains that statistics for groups. 
+        Example: None"""
+    GroupMembership = relationship('SisImportStatistic')
+    """This contains that statistics for group memberships. This can be a direct impact from the import or indirect from an enrollment being deleted. 
+        Example: None"""
+    Pseudonym = relationship('SisImportStatistic')
+    """This contains that statistics for pseudonyms. Pseudonyms are logins for users, and are the object that ties an enrollment to a user. This would be impacted from the user importer.  
+        Example: None"""
+    UserObserver = relationship('SisImportStatistic')
+    """This contains that statistics for user observers. 
+        Example: None"""
+    AccountUser = relationship('SisImportStatistic')
+    """This contains that statistics for account users. 
+        Example: None"""
+
+
+class SisImportCounts(Base):
+    __tablename__ = 'sis_import_counts'
+    accounts = Column(Integer)
+    """None 
+        Example: None"""
+    terms = Column(Integer)
+    """None 
+        Example: 3"""
+    abstract_courses = Column(Integer)
+    """None 
+        Example: None"""
+    courses = Column(Integer)
+    """None 
+        Example: 121"""
+    sections = Column(Integer)
+    """None 
+        Example: 278"""
+    xlists = Column(Integer)
+    """None 
+        Example: None"""
+    users = Column(Integer)
+    """None 
+        Example: 346"""
+    enrollments = Column(Integer)
+    """None 
+        Example: 1542"""
+    groups = Column(Integer)
+    """None 
+        Example: None"""
+    group_memberships = Column(Integer)
+    """None 
+        Example: None"""
+    grade_publishing_results = Column(Integer)
+    """None 
+        Example: None"""
+    batch_courses_deleted = Column(Integer)
+    """the number of courses that were removed because they were not included in the batch for batch_mode imports. Only included if courses were deleted 
+        Example: 11"""
+    batch_sections_deleted = Column(Integer)
+    """the number of sections that were removed because they were not included in the batch for batch_mode imports. Only included if sections were deleted 
+        Example: None"""
+    batch_enrollments_deleted = Column(Integer)
+    """the number of enrollments that were removed because they were not included in the batch for batch_mode imports. Only included if enrollments were deleted 
+        Example: 150"""
+    error_count = Column(Integer)
+    """None 
+        Example: None"""
+    warning_count = Column(Integer)
+    """None 
+        Example: None"""
 
 
 class SisImport(Base):
     __tablename__ = 'sis_import'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The unique identifier for the SIS import. 
         Example: 1"""
     created_at = Column(DateTime)
@@ -4009,9 +4469,9 @@ class SisImport(Base):
     updated_at = Column(DateTime)
     """The date the SIS import was last updated. 
         Example: 2013-12-02T00:03:21-06:00"""
-    workflowStateAllowedValues = enum.Enum('workflowStateAllowedValues', ['initializing', 'created', 'importing', 'cleanup_batch', 'imported', 'imported_with_messages', 'aborted', 'failed', 'failed_with_messages', 'restoring', 'partially_restored', 'restored'])
+    workflowStateEnum = enum.Enum('workflowStateEnum', ['initializing', 'created', 'importing', 'cleanup_batch', 'imported', 'imported_with_messages', 'aborted', 'failed', 'failed_with_messages', 'restoring', 'partially_restored', 'restored'])
     """Enum for the allowed values of the workflow_state field"""
-    workflow_state = Column(Enum(workflowStateAllowedValues))
+    workflow_state = Column(Enum(workflowStateEnum))
     """The current state of the SIS import.
  - 'initializing': The SIS import is being created, if this gets stuck in initializing, it will not import and will continue on to next import.
  - 'created': The SIS import has been created.
@@ -4026,25 +4486,27 @@ class SisImport(Base):
  - 'partially_restored': The SIS import is restored some of the states of imported items. This is generally due to passing a param like undelete only.
  - 'restored': The SIS import is restored all of the states of imported items. 
         Example: imported"""
-    data = Column($ref -> SisImportData)
+    data = relationship('SisImportData')
     """data 
         Example: None"""
-    statistics = Column($ref -> SisImportStatistics)
+    statistics = relationship('SisImportStatistics')
     """statistics 
         Example: None"""
     progress = Column(String)
     """The progress of the SIS import. The progress will reset when using batch_mode and have a different progress for the cleanup stage 
         Example: 100"""
-    errors_attachment = Column($ref -> File)
+    errors_attachment = relationship('File')
     """The errors_attachment api object of the SIS import. Only available if there are errors or warning and import has completed. 
         Example: None"""
-    user = Column($ref -> User)
+    user = relationship('User')
     """The user that initiated the sis_batch. See the Users API for details. 
         Example: None"""
-    processing_warnings = Column(Array : Array : String)
+    processing_warnings = Column(JsonObject)
+"""List[List[str]]"""
     """Only imports that are complete will get this data. An array of CSV_file/warning_message pairs. 
         Example: [['students.csv', "user John Doe has already claimed john_doe's requested login information, skipping"]]"""
-    processing_errors = Column(Array : Array : String)
+    processing_errors = Column(JsonObject)
+"""List[List[str]]"""
     """An array of CSV_file/error_message pairs. 
         Example: [['students.csv', 'Error while importing CSV. Please contact support.']]"""
     batch_mode = Column(Boolean)
@@ -4080,67 +4542,100 @@ class SisImport(Base):
     diffed_against_import_id = Column(Integer)
     """The ID of the SIS Import that this import was diffed against 
         Example: 1"""
-    csv_attachments = Column(Array : Array : $ref -> File)
+    csv_attachments = Column(JsonObject)
+"""List[List[File]]"""
     """An array of CSV files for processing 
         Example: None"""
 
-@dataclass
-class Feature:
-    feature: String
-    """The symbolic name of the feature, used in FeatureFlags"""
-    display_name: String
-    """The user-visible name of the feature"""
-    applies_to: Enum
+class Feature(Base):
+    __tablename__ = 'feature'
+    feature = Column(String)
+    """The symbolic name of the feature, used in FeatureFlags 
+        Example: fancy_wickets"""
+    display_name = Column(String)
+    """The user-visible name of the feature 
+        Example: Fancy Wickets"""
+    appliesToEnum = enum.Enum('appliesToEnum', ['Course', 'RootAccount', 'Account', 'User'])
+    """Enum for the allowed values of the applies_to field"""
+    applies_to = Column(Enum(appliesToEnum))
     """The type of object the feature applies to (RootAccount, Account, Course, or User):
  * RootAccount features may only be controlled by flags on root accounts.
  * Account features may be controlled by flags on accounts and their parent accounts.
  * Course features may be controlled by flags on courses and their parent accounts.
- * User features may be controlled by flags on users and site admin only."""
-    feature_flag: $ref -> FeatureFlag
-    """The FeatureFlag that applies to the caller"""
-    root_opt_in: Boolean
-    """If true, a feature that is 'allowed' globally will be 'off' by default in root accounts. Otherwise, root accounts inherit the global 'allowed' setting, which allows sub-accounts and courses to turn features on with no root account action."""
-    beta: Boolean
-    """Whether the feature is a feature preview. If true, opting in includes ongoing updates outside the regular release schedule."""
-    autoexpand: Boolean
-    """Whether the details of the feature are autoexpanded on page load vs. the user clicking to expand."""
-    release_notes_url: String
-    """A URL to the release notes describing the feature"""
+ * User features may be controlled by flags on users and site admin only. 
+        Example: Course"""
+    feature_flag = relationship('FeatureFlag')
+    """The FeatureFlag that applies to the caller 
+        Example: {'feature': 'fancy_wickets', 'state': 'allowed'}"""
+    root_opt_in = Column(Boolean)
+    """If true, a feature that is 'allowed' globally will be 'off' by default in root accounts. Otherwise, root accounts inherit the global 'allowed' setting, which allows sub-accounts and courses to turn features on with no root account action. 
+        Example: True"""
+    beta = Column(Boolean)
+    """Whether the feature is a feature preview. If true, opting in includes ongoing updates outside the regular release schedule. 
+        Example: True"""
+    autoexpand = Column(Boolean)
+    """Whether the details of the feature are autoexpanded on page load vs. the user clicking to expand. 
+        Example: True"""
+    release_notes_url = Column(String)
+    """A URL to the release notes describing the feature 
+        Example: http://canvas.example.com/release_notes#fancy_wickets"""
 
-@dataclass
-class FeatureFlag:
-    context_type: Enum
-    """The type of object to which this flag applies (Account, Course, or User). (This field is not present if this FeatureFlag represents the global Canvas default)"""
-    context_id: Integer
-    """The id of the object to which this flag applies (This field is not present if this FeatureFlag represents the global Canvas default)"""
-    feature: String
-    """The feature this flag controls"""
-    state: Enum
-    """The policy for the feature at this context.  can be 'off', 'allowed', 'allowed_on', or 'on'."""
-    locked: Boolean
-    """If set, this feature flag cannot be changed in the caller's context because the flag is set 'off' or 'on' in a higher context"""
 
-@dataclass
-class AccountNotification:
-    subject: String
-    """The subject of the notifications"""
-    message: String
-    """The message to be sent in the notification."""
-    start_at: DateTime
-    """When to send out the notification."""
-    end_at: DateTime
-    """When to expire the notification."""
-    icon: Enum
-    """The icon to display with the message.  Defaults to warning."""
-    roles: Array : String
-    """(Deprecated) The roles to send the notification to.  If roles is not passed it defaults to all roles"""
-    role_ids: Array : Integer
-    """The roles to send the notification to.  If roles is not passed it defaults to all roles"""
+class FeatureFlag(Base):
+    __tablename__ = 'feature_flag'
+    contextTypeEnum = enum.Enum('contextTypeEnum', ['Course', 'Account', 'User'])
+    """Enum for the allowed values of the context_type field"""
+    context_type = Column(Enum(contextTypeEnum))
+    """The type of object to which this flag applies (Account, Course, or User). (This field is not present if this FeatureFlag represents the global Canvas default) 
+        Example: Account"""
+    context_id = Column(Integer)
+    """The id of the object to which this flag applies (This field is not present if this FeatureFlag represents the global Canvas default) 
+        Example: 1038"""
+    feature = Column(String)
+    """The feature this flag controls 
+        Example: fancy_wickets"""
+    stateEnum = enum.Enum('stateEnum', ['off', 'allowed', 'allowed_on', 'on'])
+    """Enum for the allowed values of the state field"""
+    state = Column(Enum(stateEnum))
+    """The policy for the feature at this context.  can be 'off', 'allowed', 'allowed_on', or 'on'. 
+        Example: allowed"""
+    locked = Column(Boolean)
+    """If set, this feature flag cannot be changed in the caller's context because the flag is set 'off' or 'on' in a higher context 
+        Example: None"""
+
+
+class AccountNotification(Base):
+    __tablename__ = 'account_notification'
+    subject = Column(String)
+    """The subject of the notifications 
+        Example: Attention Students"""
+    message = Column(String)
+    """The message to be sent in the notification. 
+        Example: This is a test of the notification system."""
+    start_at = Column(DateTime)
+    """When to send out the notification. 
+        Example: 2013-08-28T23:59:00-06:00"""
+    end_at = Column(DateTime)
+    """When to expire the notification. 
+        Example: 2013-08-29T23:59:00-06:00"""
+    iconEnum = enum.Enum('iconEnum', ['warning', 'information', 'question', 'error', 'calendar'])
+    """Enum for the allowed values of the icon field"""
+    icon = Column(Enum(iconEnum))
+    """The icon to display with the message.  Defaults to warning. 
+        Example: information"""
+    roles = Column(JsonObject)
+"""List[str]"""
+    """(Deprecated) The roles to send the notification to.  If roles is not passed it defaults to all roles 
+        Example: ['StudentEnrollment']"""
+    role_ids = Column(JsonObject)
+"""List[int]"""
+    """The roles to send the notification to.  If roles is not passed it defaults to all roles 
+        Example: [1]"""
 
 
 class DeveloperKeyAccountBinding(Base):
     __tablename__ = 'developer_key_account_binding'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The Canvas ID of the binding 
         Example: 1"""
     account_id = Column(Integer)
@@ -4158,9 +4653,8 @@ class DeveloperKeyAccountBinding(Base):
 
 
 class LatePolicy(Base):
-    """No Description Provided"""
     __tablename__ = 'late_policy'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """the unique identifier for the late policy 
         Example: 123"""
     course_id = Column(Integer)
@@ -4197,7 +4691,7 @@ class LatePolicy(Base):
 
 class Conversation(Base):
     __tablename__ = 'conversation'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """the unique identifier for the conversation. 
         Example: 2"""
     subject = Column(String)
@@ -4224,19 +4718,23 @@ class Conversation(Base):
     starred = Column(Boolean)
     """whether the conversation is starred. 
         Example: True"""
-    properties = Column(Array : String)
+    properties = Column(JsonObject)
+"""List[str]"""
     """Additional conversation flags (last_author, attachments, media_objects). Each listed property means the flag is set to true (i.e. the current user is the most recent author, there are attachments, or there are media objects) 
         Example: None"""
-    audience = Column(Array : Integer)
+    audience = Column(JsonObject)
+"""List[int]"""
     """Array of user ids who are involved in the conversation, ordered by participation level, then alphabetical. Excludes current user, unless this is a monologue. 
         Example: None"""
-    audience_contexts = Column(Array : String)
+    audience_contexts = Column(JsonObject)
+"""List[str]"""
     """Most relevant shared contexts (courses and groups) between current user and other participants. If there is only one participant, it will also include that user's enrollment(s)/ membership type(s) in each course/group. 
         Example: None"""
     avatar_url = Column(String)
     """URL to appropriate icon for this conversation (custom, individual or group avatar, depending on audience). 
         Example: https://canvas.instructure.com/images/messages/avatar-group-50.png"""
-    participants = Column(Array : $ref -> ConversationParticipant)
+    participants = Column(JsonObject)
+"""List[ConversationParticipant]"""
     """Array of users participating in the conversation. Includes current user. 
         Example: None"""
     visible = Column(Boolean)
@@ -4249,7 +4747,7 @@ class Conversation(Base):
 
 class ConversationParticipant(Base):
     __tablename__ = 'conversation_participant'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The user ID for the participant. 
         Example: 2"""
     name = Column(String)
@@ -4265,7 +4763,7 @@ class ConversationParticipant(Base):
 
 class CustomColumn(Base):
     __tablename__ = 'custom_column'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The ID of the custom gradebook column 
         Example: 2"""
     teacher_notes = Column(Boolean)
@@ -4284,25 +4782,32 @@ class CustomColumn(Base):
     """won't be editable in the gradebook UI 
         Example: True"""
 
-@dataclass
-class CourseEventLink:
-    course: Integer
-    """ID of the course for the event."""
-    user: Integer
-    """ID of the user for the event (who made the change)."""
-    page_view: String
-    """ID of the page view during the event if it exists."""
-    copied_from: Integer
-    """ID of the course that this course was copied from. This is only included if the event_type is copied_from."""
-    copied_to: Integer
-    """ID of the course that this course was copied to. This is only included if the event_type is copied_to."""
-    sis_batch: Integer
-    """ID of the SIS batch that triggered the event."""
+
+class CourseEventLink(Base):
+    __tablename__ = 'course_event_link'
+    course = Column(Integer)
+    """ID of the course for the event. 
+        Example: 12345"""
+    user = Column(Integer)
+    """ID of the user for the event (who made the change). 
+        Example: 12345"""
+    page_view = Column(String)
+    """ID of the page view during the event if it exists. 
+        Example: e2b76430-27a5-0131-3ca1-48e0eb13f29b"""
+    copied_from = Column(Integer)
+    """ID of the course that this course was copied from. This is only included if the event_type is copied_from. 
+        Example: 12345"""
+    copied_to = Column(Integer)
+    """ID of the course that this course was copied to. This is only included if the event_type is copied_to. 
+        Example: 12345"""
+    sis_batch = Column(Integer)
+    """ID of the SIS batch that triggered the event. 
+        Example: 12345"""
 
 
 class CourseEvent(Base):
     __tablename__ = 'course_event'
-    id = Column(String, primary_key=True)
+    id = Column(String)
     """ID of the event. 
         Example: e2b76430-27a5-0131-3ca1-48e0eb13f29b"""
     created_at = Column(DateTime)
@@ -4317,93 +4822,142 @@ class CourseEvent(Base):
     event_source = Column(String)
     """Course event source depending on the event type.  This will return a string containing the source of the event. 
         Example: manual|sis|api"""
-    links = Column($ref -> CourseEventLink)
+    links = relationship('CourseEventLink')
     """Jsonapi.org links 
         Example: {'course': '12345', 'user': '12345', 'page_view': 'e2b76430-27a5-0131-3ca1-48e0eb13f29b'}"""
 
-@dataclass
-class CreatedEventData:
-    name: Array : String
-    """No Description Provided"""
-    start_at: Array : DateTime
-    """No Description Provided"""
-    conclude_at: Array : DateTime
-    """No Description Provided"""
-    is_public: Array : Boolean
-    """No Description Provided"""
-    created_source: String
-    """The type of action that triggered the creation of the course."""
 
-@dataclass
-class UpdatedEventData:
-    name: Array : String
-    """No Description Provided"""
-    start_at: Array : DateTime
-    """No Description Provided"""
-    conclude_at: Array : DateTime
-    """No Description Provided"""
-    is_public: Array : Boolean
-    """No Description Provided"""
+class CreatedEventData(Base):
+    """The created event data object returns all the fields that were set in the format of the following example.  If a field does not exist it was not set. The value of each field changed is in the format of [:old_value, :new_value].  The created event type also includes a created_source field to specify what triggered the creation of the course."""
+    __tablename__ = 'created_event_data'
+    name = Column(JsonObject)
+"""List[str]"""
+    """None 
+        Example: [None, 'Course 1']"""
+    start_at = Column(JsonObject)
+"""List[datetime]"""
+    """None 
+        Example: [None, '2012-01-19T15:00:00-06:00']"""
+    conclude_at = Column(JsonObject)
+"""List[datetime]"""
+    """None 
+        Example: [None, '2012-01-19T15:00:00-08:00']"""
+    is_public = Column(JsonObject)
+"""List[bool]"""
+    """None 
+        Example: [None, False]"""
+    created_source = Column(String)
+    """The type of action that triggered the creation of the course. 
+        Example: manual|sis|api"""
 
-@dataclass
-class Favorite:
-    context_id: Integer
-    """The ID of the object the Favorite refers to"""
-    context_type: Enum
-    """The type of the object the Favorite refers to (currently, only 'Course' is supported)"""
 
-@dataclass
-class Page:
-    page_id: Integer
-    """the ID of the page"""
-    url: String
-    """the unique locator for the page"""
-    title: String
-    """the title of the page"""
-    created_at: DateTime
-    """the creation date for the page"""
-    updated_at: DateTime
-    """the date the page was last updated"""
-    hide_from_students: Boolean
-    """(DEPRECATED) whether this page is hidden from students (note: this is always reflected as the inverse of the published value)"""
-    editing_roles: String
-    """roles allowed to edit the page; comma-separated list comprising a combination of 'teachers', 'students', 'members', and/or 'public' if not supplied, course defaults are used"""
-    last_edited_by: $ref -> User
-    """the User who last edited the page (this may not be present if the page was imported from another system)"""
-    body: String
-    """the page content, in HTML (present when requesting a single page; omitted when listing pages)"""
-    published: Boolean
-    """whether the page is published (true) or draft state (false)."""
-    front_page: Boolean
-    """whether this page is the front page for the wiki"""
-    locked_for_user: Boolean
-    """Whether or not this is locked for the user."""
-    lock_info: $ref -> LockInfo
-    """(Optional) Information for the user about the lock. Present when locked_for_user is true."""
-    lock_explanation: String
-    """(Optional) An explanation of why this is locked for the user. Present when locked_for_user is true."""
+class UpdatedEventData(Base):
+    """The updated event data object returns all the fields that have changed in the format of the following example.  If a field does not exist it was not changed.  The value is an array that contains the before and after values for the change as in [:old_value, :new_value]."""
+    __tablename__ = 'updated_event_data'
+    name = Column(JsonObject)
+"""List[str]"""
+    """None 
+        Example: ['Course 1', 'Course 2']"""
+    start_at = Column(JsonObject)
+"""List[datetime]"""
+    """None 
+        Example: ['2012-01-19T15:00:00-06:00', '2012-07-19T15:00:00-06:00']"""
+    conclude_at = Column(JsonObject)
+"""List[datetime]"""
+    """None 
+        Example: ['2012-01-19T15:00:00-08:00', '2012-07-19T15:00:00-08:00']"""
+    is_public = Column(JsonObject)
+"""List[bool]"""
+    """None 
+        Example: [True, False]"""
 
-@dataclass
-class PageRevision:
-    revision_id: Integer
-    """an identifier for this revision of the page"""
-    updated_at: DateTime
-    """the time when this revision was saved"""
-    latest: Boolean
-    """whether this is the latest revision or not"""
-    edited_by: $ref -> User
-    """the User who saved this revision, if applicable (this may not be present if the page was imported from another system)"""
-    url: String
-    """the following fields are not included in the index action and may be omitted from the show action via summary=1 the historic url of the page"""
-    title: String
-    """the historic page title"""
-    body: String
-    """the historic page contents"""
+
+class Favorite(Base):
+    __tablename__ = 'favorite'
+    context_id = Column(Integer)
+    """The ID of the object the Favorite refers to 
+        Example: 1170"""
+    contextTypeEnum = enum.Enum('contextTypeEnum', ['Course'])
+    """Enum for the allowed values of the context_type field"""
+    context_type = Column(Enum(contextTypeEnum))
+    """The type of the object the Favorite refers to (currently, only 'Course' is supported) 
+        Example: Course"""
+
+
+class Page(Base):
+    __tablename__ = 'page'
+    page_id = Column(Integer)
+    """the ID of the page 
+        Example: 1"""
+    url = Column(String)
+    """the unique locator for the page 
+        Example: my-page-title"""
+    title = Column(String)
+    """the title of the page 
+        Example: My Page Title"""
+    created_at = Column(DateTime)
+    """the creation date for the page 
+        Example: 2012-08-06T16:46:33-06:00"""
+    updated_at = Column(DateTime)
+    """the date the page was last updated 
+        Example: 2012-08-08T14:25:20-06:00"""
+    hide_from_students = Column(Boolean)
+    """(DEPRECATED) whether this page is hidden from students (note: this is always reflected as the inverse of the published value) 
+        Example: None"""
+    editing_roles = Column(String)
+    """roles allowed to edit the page; comma-separated list comprising a combination of 'teachers', 'students', 'members', and/or 'public' if not supplied, course defaults are used 
+        Example: teachers,students"""
+    last_edited_by = relationship('User')
+    """the User who last edited the page (this may not be present if the page was imported from another system) 
+        Example: None"""
+    body = Column(String)
+    """the page content, in HTML (present when requesting a single page; omitted when listing pages) 
+        Example: <p>Page Content</p>"""
+    published = Column(Boolean)
+    """whether the page is published (true) or draft state (false). 
+        Example: True"""
+    front_page = Column(Boolean)
+    """whether this page is the front page for the wiki 
+        Example: None"""
+    locked_for_user = Column(Boolean)
+    """Whether or not this is locked for the user. 
+        Example: None"""
+    lock_info = relationship('LockInfo')
+    """(Optional) Information for the user about the lock. Present when locked_for_user is true. 
+        Example: None"""
+    lock_explanation = Column(String)
+    """(Optional) An explanation of why this is locked for the user. Present when locked_for_user is true. 
+        Example: This page is locked until September 1 at 12:00am"""
+
+
+class PageRevision(Base):
+    __tablename__ = 'page_revision'
+    revision_id = Column(Integer)
+    """an identifier for this revision of the page 
+        Example: 7"""
+    updated_at = Column(DateTime)
+    """the time when this revision was saved 
+        Example: 2012-08-07T11:23:58-06:00"""
+    latest = Column(Boolean)
+    """whether this is the latest revision or not 
+        Example: True"""
+    edited_by = relationship('User')
+    """the User who saved this revision, if applicable (this may not be present if the page was imported from another system) 
+        Example: None"""
+    url = Column(String)
+    """the following fields are not included in the index action and may be omitted from the show action via summary=1 the historic url of the page 
+        Example: old-page-title"""
+    title = Column(String)
+    """the historic page title 
+        Example: Old Page Title"""
+    body = Column(String)
+    """the historic page contents 
+        Example: <p>Old Page Content</p>"""
 
 
 class ExternalFeed(Base):
     __tablename__ = 'external_feed'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """The ID of the feed 
         Example: 5"""
     display_name = Column(String)
@@ -4418,21 +4972,21 @@ class ExternalFeed(Base):
     created_at = Column(DateTime)
     """When this external feed was added to Canvas 
         Example: 2012-06-01T00:00:00-06:00"""
-    verbosityAllowedValues = enum.Enum('verbosityAllowedValues', ['link_only', 'truncate', 'full'])
+    verbosityEnum = enum.Enum('verbosityEnum', ['link_only', 'truncate', 'full'])
     """Enum for the allowed values of the verbosity field"""
-    verbosity = Column(Enum(verbosityAllowedValues))
+    verbosity = Column(Enum(verbosityEnum))
     """The verbosity setting determines how much of the feed's content is imported into Canvas as part of the posting. 'link_only' means that only the title and a link to the item. 'truncate' means that a summary of the first portion of the item body will be used. 'full' means that the full item body will be used. 
         Example: truncate"""
 
 
 class Module(Base):
     __tablename__ = 'module'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     """the unique identifier for the module 
         Example: 123"""
-    workflowStateAllowedValues = enum.Enum('workflowStateAllowedValues', ['active', 'deleted'])
+    workflowStateEnum = enum.Enum('workflowStateEnum', ['active', 'deleted'])
     """Enum for the allowed values of the workflow_state field"""
-    workflow_state = Column(Enum(workflowStateAllowedValues))
+    workflow_state = Column(Enum(workflowStateEnum))
     """the state of the module: 'active', 'deleted' 
         Example: active"""
     position = Column(Integer)
@@ -4447,7 +5001,8 @@ class Module(Base):
     require_sequential_progress = Column(Boolean)
     """Whether module items must be unlocked in order 
         Example: True"""
-    prerequisite_module_ids = Column(Array : Integer)
+    prerequisite_module_ids = Column(JsonObject)
+"""List[int]"""
     """IDs of Modules that must be completed before this one is unlocked 
         Example: [121, 122]"""
     items_count = Column(Integer)
@@ -4456,12 +5011,13 @@ class Module(Base):
     items_url = Column(String)
     """The API URL to retrive this module's items 
         Example: https://canvas.example.com/api/v1/modules/123/items"""
-    items = Column(Array : $ref -> ModuleItem)
+    items = Column(JsonObject)
+"""List[ModuleItem]"""
     """The contents of this module, as an array of Module Items. (Present only if requested via include[]=items AND the module is not deemed too large by Canvas.) 
         Example: None"""
-    stateAllowedValues = enum.Enum('stateAllowedValues', ['locked', 'unlocked', 'started', 'completed'])
+    stateEnum = enum.Enum('stateEnum', ['locked', 'unlocked', 'started', 'completed'])
     """Enum for the allowed values of the state field"""
-    state = Column(Enum(stateAllowedValues))
+    state = Column(Enum(stateEnum))
     """The state of this Module for the calling user one of 'locked', 'unlocked', 'started', 'completed' (Optional; present only if the caller is a student or if the optional parameter 'student_id' is included) 
         Example: started"""
     completed_at = Column(DateTime)
