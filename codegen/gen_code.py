@@ -2,9 +2,14 @@ from typing import List
 from declarations import *
 import warnings
 import copy
+from dataclasses import asdict
+import json
 
 from parse_published_docs import get_doc_objs_and_requests
 from parse_model_comments import get_model_objs
+
+def sort_objs_by_name(objs: List[ObjectDefinition]):
+    return sorted(objs, key=lambda o: o.name_snake)
 
 def to_dict_by_name(objs: List[ObjectDefinition]):
     return dict(map(lambda o: (o.name, o), objs))
@@ -72,6 +77,7 @@ def merge_obj_lists(a_objs: List[ObjectDefinition], b_objs: List[ObjectDefinitio
     return list(new_objs.values())
 
 def render_objects(objs: List[ObjectDefinition]) -> List[str]:
+    objs = sort_objs_by_name(objs)
     rendered_objs = []
     for obj in objs:
         rendered_obj = obj.render()
@@ -89,51 +95,53 @@ def render_requests(requests: List[Request]) -> List[str]:
 def get_obj_req_rends(objects, requests):
     return (render_objects(objects), render_requests(requests))
 
-def save_objects_to_file(rendered_objs: List[str]):
-    with open(RENDERED_OBJS_FILE, 'w') as f:
+def save_rendered_objects_to_file(rendered_objs: List[str], file=RENDERED_OBJS_FILE):
+    with open(file, 'w') as f:
         for obj in rendered_objs:
             f.write(obj)
             f.write('\n')
         
-def save_requests_to_file(rendered_reqs: List[str]):
+def save_rendered_requests_to_file(rendered_reqs: List[str]):
     with open(RENDERED_REQUESTS_FILE, 'w') as f:
         for req in rendered_reqs:
             f.write(req)
             f.write('\n')
 
-def main():
+def save_objs_json(objs: List[ObjectDefinition], file=OBJECTS_FILE):
+    objs = sort_objs_by_name(objs)
+    with open(file, 'w') as f:
+        obj_name_obj = {obj.name: asdict(obj) for obj in objs}
+        json.dump(obj_name_obj, f, indent=3)
+
+def save_reqs_json(requests: List[Request]):
+    with open(REQUESTS_FILE, 'w') as f:
+        req_name_req = {req.name: asdict(req) for req in requests}
+        json.dump(req_name_req, f, indent=3)
+
+def print_obj_dict(obj):
+    print(asdict(obj))
+
+def generate_seperate_files():
+    docs_objs, docs_requests = get_doc_objs_and_requests()
+    model_objs = get_model_objs()
+    save_objs_json(docs_objs, file=DOC_OBJS_FILE)
+    save_objs_json(model_objs, file=MODEL_OBJS_FILE)
+    save_rendered_objects_to_file(render_objects(docs_objs), file=RENDERED_DOC_OBJS_FILE)
+    save_rendered_objects_to_file(render_objects(model_objs), file=RENDERED_MODEL_OBJS_FILE)
+
+def generate_merged_file():
     docs_objs, docs_reqs = get_doc_objs_and_requests()
     model_objs = get_model_objs()
     # print(model_objs)
     merged_objs = merge_obj_lists(model_objs, docs_objs)
+
     rendered_objs = render_objects(merged_objs)
     rendered_requests = render_requests(docs_reqs)
-    save_objects_to_file(rendered_objs)
-    save_requests_to_file(rendered_requests)
+    save_rendered_objects_to_file(rendered_objs)
+    save_rendered_requests_to_file(rendered_requests)
 
-def rend_init_fields(f: FieldInit):
-    return {'py': f.py_repr(), 'sql': f.sql_repr()}
-
-def test_main():
-    f1 = FieldInit(type_='string')
-    f1d = rend_init_fields(f1)
-    fkf1 = ForeignKeyFieldInit(type_='string', class_name='user', field_name='name')
-    fkf1d = rend_init_fields(fkf1)
-    ef = EnumFieldInit(type_='string', enum_name='AllowedValues')
-    efd = rend_init_fields(ef)
-    ref = RefFieldInit(type_='string', class_name='user', back_populates='refs', secondary='user_refs_association_table')
-    refd = rend_init_fields(ref)
-
-    jsnd = DictJsonFieldInit(key_type_=f1, value_type_=ef)
-    jsndd = rend_init_fields(jsnd)
-    jsn_list = ListJsonFieldInit(item_type_=f1)
-    jsn_list_rend = rend_init_fields(jsn_list)
-    jsn_nested_list = ListJsonFieldInit(item_type_=jsn_list)
-    jsn_nested_list_rend = rend_init_fields(jsn_nested_list)
-    jsn_nested_dict = ListJsonFieldInit(item_type_=jsnd)
-    jsn_nested_dict_rend = rend_init_fields(jsn_nested_dict)
-
-    print("done")
+def main():
+    generate_seperate_files()
 
 if __name__ == "__main__":
     main()

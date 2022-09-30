@@ -200,6 +200,7 @@ def parse_model(jsoned_model: Dict[str, Any]) -> ObjectDefinition:
     model.name = jsoned_model.get('id')
     model.fields = parse_fields(jsoned_model.get('properties'), model.name)
     model.description = jsoned_model.get('description')
+    model.model_json = jsoned_model
     
     return model
 

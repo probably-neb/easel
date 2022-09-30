@@ -1,97 +1,123 @@
+from typing import Dict,Any, Tuple
 from cement import App, TestApp, init_defaults
 from cement.core.exc import CaughtSignal
 from cement.core.output import OutputHandler
 from cement.core.template import TemplateHandler
 from cement.utils import fs
 from typing import Mapping
-from .core.exc import easelError
-from .controllers.base import Base
-from .controllers.courses import Courses
-from .controllers.assignments import Assignments
+# from .core.exc import easelError
+from .controllers.base_controller import BaseController
+# from .controllers.course_controller import CourseController
+# from .controllers.assignment_controller import AssignmentController
 import rich
 import mako
 from mako.template import Template
-# configuration defaults
-CONFIG = init_defaults('easel')
-CONFIG['easel']['course_structure'] = '~/Dropbox/code/py/easel/course-structure.json'
-
+from mako.lookup import TemplateLookup
 import os
-from tinydb import TinyDB
-from BetterJSONStorage import BetterJSONStorage
+import sys
+from importlib.machinery import SourceFileLoader
 from pathlib import Path
-from .core.db_funcs import DBFuncs
-from .core.api import CanvasApi
 from cement.utils import fs
 from cement.ext.ext_colorlog import ColorLogHandler
+# from sqlalchemy.orm import sessionmaker, Session
+# from sqlalchemy import create_engine, null, Engine
+# from .core.items import Base, Course
+from itertools import repeat
+import logging
 
-def extend_tinydb(app):
-    db_file = app.config.get('easel', 'course_structure')
-    
-    # ensure that we expand the full path
-    db_file = fs.abspath(db_file)
-    
-    # ensure our parent directory exists
-    db_dir = os.path.dirname(db_file)
-    if not os.path.exists(db_dir):
-        os.makedirs(db_dir)
+from .core.api import CanvasApi
 
-    # app.extend('db', TinyDB(Path(db_file), access_mode="r+", storage=BetterJSONStorage))
-    app.extend('db', TinyDB(Path(db_file), access_mode="r+", indent=3))
-    app.log.info('App extended with TinyDB: [%s]' % vars(app.db))
-    app.log.info('Database file is: %s' % db_file)
+# configuration defaults
+CONFIG = init_defaults('easel')
+CONFIG['easel']['database'] = '~/Dropbox/code/py/easel/easel.db'
 
-def extend_dbfuncs(app):
-    app.extend('dbfuncs', DBFuncs(app))
+# def extend_sql(app):
+#     dbpath: Path = os.path.expanduser(app.config.get('easel', 'database'))
+#     # os.remove(dbpath)
+#     app.log.info(f"Attempting to connect to database at {dbpath}")
+#     dblink: str = 'sqlite+pysqlite:////' + dbpath
+#     # TODO: merge engine logger and easel logger 
+#     engine: Engine = create_engine(dblink, echo=True, logging_name = app.Meta.label)
+#     # TODO: possibly lazy load easel items
+#     Base.metadata.create_all(engine)
+#     session: Session = Session(engine)
+#     session.begin()
+#     app.extend('db', session)
 
-def extend_api(app):
-    app.extend('api', CanvasApi(app))
-
-def close_storage(app):
-    app.log.info("Closing Storage")
-    app.db.storage.close()
+# def close_sql(app):
+#     app.db.close()
 
 class MakoTemplateHandler(TemplateHandler):
     class Meta:
         label = 'mako_template_handler'
 
-    def load(self, template_path: str):
-        return super().load(template_path)
+    def load(self, template: str=None, lookup_dirs: list=[], lookup_defaults: bool=False):
+        #TODO: differentiate template and template content, and load from file or string respectively (stop using super _load_template_from_file)
+        if lookup_defaults:
+            lookup_dirs = lookup_dirs + self.app._meta.template_dirs
+            # _, app_template_path = super()._load_template_from_module("__init__.py")
+            lookup_dirs.append("./easel/templates")
+        self.app.log.info(f"Lookup dirs: {lookup_dirs}")
+        lookup=TemplateLookup(directories=lookup_dirs)
+        # if template: # template takes precedence over content
+        #     template_content = open(template, 'r').read()
 
-    def render(self, content:str, data:Mapping):
-        template = Template(content)
-        render = template.render(data)
+        template_content, template_type, template_path = super().load(template)
+        template_obj = Template(template_content, lookup=lookup)
+        return template_obj
+
+    def render(self, data: Dict[str, Any], template: str=None, lookup_dirs: list=[], lookup_defaults: bool=False):
+        template_obj = self.load(template, lookup_dirs, lookup_defaults)
+        self.app.log.info(f"Rendering template {template} with data: {data.keys()}")
+        render = template_obj.render(**data)
         print(render)
-        return render
+        # return render
 
 class MakoOutputHandler(OutputHandler):
     class Meta:
         label = 'mako_output_handler'
 
-    def render(self, data: Mapping, *args, **kwargs) -> str:
+    def render(self, data: Dict[str, Any], *args, **kwargs) -> str:
         # print(rich.inspect(args), rich.inspect(kwargs))
-        print(rich.inspect(self.app.template))
+        # print(rich.inspect(self.app.template))
         if isinstance(kwargs.get('template'), str):
             template = str(kwargs.get('template'))
+            template_contents = self.app.template.load(template)
+            render = self.app.template.render(template_contents,data)
         else:
             print("ruh roh", rich.inspect(kwargs))
             return ""
-        template_contents = self.app.template.load(template)
-        render = self.app.template.render(template_contents,data)
         console = rich.console.Console()
         with console.capture() as capture:
             console.print(render)
         output = capture.get()
         return output
 
+def extend_api(app):
+    app.extend('api', CanvasApi(app=app))
+
+def append_local_template_dir(app):
+    app.add_template_dir("./easel/templates")
+
+def add_config_hooks(app):
+    for hook in app.config.keys('hooks'):
+        # hook = app.config.get('hooks', hook_key)
+        app.hook.define(hook)
+        hook_data = app.config.get('hooks', hook)
+        for hook_func_module_str in hook_data.get('register_hooks'):
+            hook_func_module = SourceFileLoader("func", hook_func_module_str).load_module()
+            hook_func = hook_func_module.hook
+            app.hook.register(hook, hook_func)
+
 class easel(App):
     """Easel primary application."""
-
     class Meta:
         hooks = [
-                ('post_setup',extend_tinydb),
-                ('post_setup', extend_dbfuncs),
-                ('post_setup', extend_api),
-                ('pre_close', close_storage)
+            ('post_setup', add_config_hooks),
+            ('post_setup', extend_api),
+            ('post_setup', append_local_template_dir),
+        #         ('post_setup',extend_sql),
+        #         ('post_run', close_sql),
         ]
 
         label = 'easel'
@@ -106,7 +132,7 @@ class easel(App):
         extensions = [
             'colorlog',
             'yaml',
-            'jinja2',
+            # 'jinja2',
             'json'
         ]
 
@@ -128,9 +154,7 @@ class easel(App):
 
         # register handlers
         handlers = [
-            Base,
-            Courses,
-            Assignments,
+            BaseController,
             ColorLogHandler,
             MakoOutputHandler,
             MakoTemplateHandler,

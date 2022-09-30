@@ -11,8 +11,6 @@ import os
 import hashlib
 from collections import OrderedDict
 from typing import Callable
-from tinydb.table import Document
-from tinydb import Query
 from bs4 import BeautifulSoup
 from rich.progress import track
 import rich 
@@ -27,16 +25,22 @@ def html_to_md(html):
 
 # used to avoid passing session around, for organization
 class Requests:
-    def __init__(self, app, headers:dict={}, domain:str="", api_path:str="/api/v1/"):
-        self.headers =headers
-        self.domain = domain
-        self.api_path = api_path
+    def __init__(self, app):
+        self.headers = {}
+        self.domain: str = 'https://' + app.config.get('easel','domain')
+        self.api_path = "/api/v1/"
         self.app = app
 
     async def __aenter__(self):
         self.loop = asyncio.get_event_loop()
-        self._session: aiohttp.ClientSession = aiohttp.ClientSession(base_url=self.domain, raise_for_status=True, headers=self.headers)
+        self._session: aiohttp.ClientSession = aiohttp.ClientSession(headers=self.headers)
         return self
+
+    async def get_many(self, urls: list[str], params: dict = None, headers: dict = None):
+        """gets multiple urls in parallel"""
+        tasks = [asyncio.create_task(self._session.get(url,params=params,headers=headers)) for url in urls]
+        responses = await asyncio.gather(*tasks)
+        return [await res.json() for res in responses]
 
     async def get_courses(self):
         """gets courses that are favorited"""
@@ -44,26 +48,29 @@ class Requests:
         course_task = asyncio.create_task(self._session.get(self.api_path + "courses", params=params))
         response: aiohttp.ClientResponse = await course_task
         courses: list[dict] = await response.json()
-        favorite_courses = []
+        parsed_courses = []
         for course in track(sequence=courses, description="Updating Courses..."):
-            if course.get("is_favorite"):
-                course['type'] = 'canvas'
-                id = course['id']
-                names = []
-                # keys that canvas stores different names under
-                for name_option in ["name", "friendly_name", "course_code"]:
-                    name = course.get(name_option)
-                    if name is not None:
-                        names.append({'name' : name, 'type' : name_option})
-                #TODO: when adding links if 'links' is empty add whatever link as default
-                course['links'] = {'default' : self.domain + f"/courses/{id}"}
-                course['names'] = names
-                self.app.log.info(f"Found Favorite Course: {id}: {names}")
-                # store = asyncio.to_thread(self.app.db.table("courses").upsert, Document(course, doc_id=course["id"]))
-                # await store
-                self.app.db.table("courses").upsert, Document(course, doc_id=course["id"])
-                favorite_courses.append(course)
-        return favorite_courses
+            course['type'] = 'canvas'
+            id = course['id']
+            names = []
+            # keys that canvas stores different names under
+            for name_option in ["name", "friendly_name", "course_code"]:
+                name = course.get(name_option)
+                if name is not None:
+                    names.append({'name' : name, 'type' : name_option})
+            #TODO: when adding links if 'links' is empty add whatever link as default
+            course['links'] = {'default' : self.domain + f"/courses/{id}"}
+            course['names'] = names
+            self.app.log.info(f"Found Favorite Course: {id}: {names}")
+            parsed_courses.append(course)
+        return parsed_courses
+    
+    async def get_favorite_courses(self):
+        """gets courses that are favorited"""
+        courses = await self.get_courses()
+        # self.app.log.info(f"Found Favorite Course: {id}: {names}")
+        return filter(lambda course: course.get("is_favorite"), courses)
+
 
     async def get_assignment_group_assignments(self, course_id: int, group_id: int):
         params = {'include': '"score_statistics","submission"'}
@@ -98,18 +105,24 @@ class Requests:
             group['course_id'] = course_id
 
             #This probably isn't safe
-            # store = asyncio.run_in_executor(self.app.db.table('assignments').upsert, Document((group), doc_id=group['id']))
-            # await store
-            self.app.db.table('assignments').upsert(Document((group), doc_id=group['id']))
 
         return assignment_groups
+
+    async def get_assignments(self, course_id):
+        """gets pages from course course_id"""
+        # params = {'include': '"score_statistics","submission", "assignments"'}
+        params = {}
+        task = asyncio.create_task(self._session.get(self.api_path + f"courses/{course_id}/assignments", params=params))
+        res = await task
+        assignments = await res.json()
+        return assignments
 
     async def __aexit__(self, *err):
         await self._session.close()
         self._session = None
 
-# async wrapper
-def wrap_async(async_func: Callable):
+# wrap async functions so they can be called synchronously
+def wrap_sync(async_func: Callable):
     def wrap(*args, **kwargs):
         return asyncio.run(async_func(*args, **kwargs))
     return wrap
@@ -122,28 +135,25 @@ class CanvasApi:
         self.api_path = '/api/v1/'
         self.path = self.domain + self.api_path
     
-    @wrap_async
-    #TODO: better name (called in dbfuncs)
-    async def sync_with_api(self, types: list, ids:list[int]=[]):
-        async with Requests(headers=self.header, domain=self.domain,app=self.app) as api:
-            # course_info:list = []
+    def get_open_assignments(self):
+        course_ids = list(map(lambda course: course['id'], self.get_courses()))
+        # print("course ids:", course_ids)
+        returned_assignments = list(map(lambda course_id: self.get_assignments(course_id), course_ids))
+        assignments = []
+        for assignment_group in returned_assignments:
+            if type(assignment_group) == list:
+                assignments.extend(assignment_group)
+            else:
+                assignments.append(assignment_group)
+        return assignments
 
-            # BLOCKING
-            # if we should update courses or we need course ids for other updates
-            if "courses" in types or not len(self.app.db.table("courses")) > 0:
-                courses: list[dict] = await api.get_courses()
-            if not ids:
-                ids = list(map(lambda doc: doc.doc_id, self.app.db.table('courses').search(Query().type == "canvas")))
-            tasks = []
-            if 'assignments' in types:
-                for id in ids:
-                    task: asyncio.Task = asyncio.create_task(api.get_assignment_groups(id))
-                    tasks.append(task)
-
-            await asyncio.gather(*tasks)
-                # assignments: list[dict] = await api.get_assignments()
-            # store list of course names by id in 
-            # self.app.db.upsert(Document({'course_info': course_info},doc_id=2))
+    def get_modules(self, course_id):
+        params = {'include': '"items"'}
+        res = requests.get(self.path + f"courses/{course_id}/modules", params=params, headers=self.header)
+        modules = res.json()
+        # for module in modules:
+        #     module['course_id'] = course_id
+        return modules
 
     def get_domain_header(self):
         return (self.domain, self.header)
@@ -151,28 +161,52 @@ class CanvasApi:
 # The `ignore` and `ignore_permanently` URLs can be used to update the user's preferences on what items will be displayed. Performing a DELETE request against the `ignore` URL will hide that item from future todo item requests, until the item changes. Performing a DELETE request against the `ignore_permanently` URL will hide that item forever.
     def get_todo_items(self):
         items =  self.api_request('users/self/todo').json()
-        for item in items:
-            if item.get('assignment') is not None:
-                st = time.time()
-                if self.app.db:
-                    item['assignment']['description_text'] = html_to_md(item['assignment']['description'])
-                    self.app.db.table('assignments').upsert((Document({'description_text' : item['assignment']['description_text']}, doc_id=item['assignment']['id'])))
-                et = time.time()
-                self.app.log.info(f'text conversion took {(et - st):.4} seconds')
+        # for item in items:
+            # if item.get('assignment') is not None:
+            #     self.app.log.info(f'text conversion took {(et - st):.4} seconds')
         return items
 
     def get_upcoming(self):
         items = self.api_request('/users/self/upcoming_events').json()
-        todo_list = {}
-        for item in items:
-            if item.get('assignment') is not None:
-                st = time.time()
-                if self.app.db:
-                    item['assignment']['description_text'] = html_to_md(item['assignment']['description'])
-                    self.app.db.table('assignments').upsert((Document({'description_text' : item['assignment']['description_text']}, doc_id=item['assignment']['id'])))
-                et = time.time()
-                # self.app.log.info(f'text conversion took {(et - st):.4} seconds')
+        # todo_list = {}
+        # for item in items:
+        #     if item.get('assignment') is not None:
         return items
+
+    def get_assignments(self, course_id):
+        """gets pages from course course_id"""
+        # params = {'include': '"score_statistics","submission", "assignments"'}
+        params = {}
+        res = self.api_request(f"courses/{course_id}/assignments", params=params)
+        assignments = res.json()
+        return assignments
+
+    def get_courses(self):
+        """gets courses that are favorited"""
+        params = {"per_page": 100, "include": "favorites"} #,"syllabus_body","public_description","total_scores","current_grading_period_scores","grading_periods","term","course_progress","sections","storage_quota_used_mb","passback_status","favorites","teachers","observed_users","concluded"'}
+        response = self.api_request("courses", params=params)
+        courses: list[dict] = response.json()
+        parsed_courses = []
+        for course in track(sequence=courses, description="Updating Courses..."):
+            course['type'] = 'canvas'
+            id = course['id']
+            names = []
+            # keys that canvas stores different names under
+            for name_option in ["name", "friendly_name", "course_code"]:
+                name = course.get(name_option)
+                if name is not None:
+                    names.append({'name' : name, 'type' : name_option})
+            #TODO: when adding links if 'links' is empty add whatever link as default
+            course['links'] = {'default' : self.domain + f"/courses/{id}"}
+            course['names'] = names
+            parsed_courses.append(course)
+        return parsed_courses
+
+    def get_favorite_courses(self):
+        """gets courses that are favorited"""
+        courses = self.get_courses()
+        # self.app.log.info(f"Found Favorite Course: {id}: {names}")
+        return list(filter(lambda course: course.get("is_favorite"), courses))
 
     def submit_assignment(self, course_id, assignment_id, path):
         path = fs.abspath(path)
@@ -191,12 +225,21 @@ class CanvasApi:
         upload_response = requests.post(url=url, params=upload_params, files=file)
         upload_response.raise_for_status()
         if upload_response.status_code >= 300:
-            requests.get(url, headers={"Content-Lenght" : '0'}.update(self.header))
+            requests.get(url, headers={"Content-Length" : '0'}.update(self.header))
 
 
     def check_response(self, res):
         try: 
             res.raise_for_status()
+        except requests.exceptions.HTTPError as err:
+            match (err.response.status_code):
+                case 403:
+                    errstr = "forbidden to access assignment at " + err.response.url
+                    self.app.log.error(errstr)
+                    print(errstr)
+                    return None
+                case _:
+                    raise err
         except (AttributeError,aiohttp.ClientResponseError, ValueError):
             raise CanvasNoAccessError("That page has been disabled for this course")
 
@@ -219,6 +262,14 @@ class CanvasApi:
         response = requests.get(path, headers=header, params=param, allow_redirects=True)
         self.check_response(response)
         return response
+
+    @wrap_sync
+    async def request_many(self, paths, params=None, headers=None):
+        headers = self.header | headers if headers else self.header
+        async with Requests(self.app) as async_requests:
+            return await async_requests.get_many(paths, params, headers)
+
+        
 
 #################################
 ##                             ##

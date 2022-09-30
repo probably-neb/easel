@@ -1,8 +1,6 @@
 from tinydb import Query
 from tinydb.table import Document
 import re
-import time
-from pprint import pprint
 import hashlib
 # import difflib
 
@@ -31,7 +29,6 @@ class DBFuncs:
     def update_db(self, api: bool=True, types:list=[]):
         if api and types:
             self.app.api.sync_with_api(types)
-            
         if self.app.config.keys('courses'):
             custom_courses = self.app.config.get_section_dict('courses')
             courses = []

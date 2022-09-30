@@ -36,3 +36,23 @@ def take_longer(a: str, b: str) -> str:
     if b is None or (a is not None and len(a) > len(b)):
         return a
     return b
+
+def capitalize(s: str) -> str:
+    return s[0].upper() + s[1:]
+
+def replace_all(olds:str, new: str, text:str) -> str:
+    """replace all characters found in olds with the single character new in text"""
+    if len(new) > 1:
+        raise ValueError("new must be a single character")
+    for char in text:
+        if char in olds:
+            text = text.replace(char, new)
+    return text
+
+def to_classname(s: str) -> str:
+    s = replace_all("()", '', s)
+    return capitalize(snake_to_camel(s))
+
+def wrap(text,width):
+    """used in mako templates for formatting"""
+    return text.replace('\n','\n'+'\t'*width)

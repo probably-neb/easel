@@ -6,32 +6,41 @@ from os import path
 import os
 import sys
 from mako.template import Template
+from mako.lookup import TemplateLookup
 import re
 
-from utils import take_longer, camel_to_snake
+from utils import take_longer, camel_to_snake, snake_to_camel, capitalize, to_classname
 import warnings
 
 USE_OFFLINE = True
 
-DIRNAME = path.dirname(path.abspath(__file__))
-TEMPLATE_DIRNAME = path.join(DIRNAME, "templates")
-GENERATED_CODE_DIRNAME = path.join(DIRNAME, "generated_code")
+ROOT_DIR = path.dirname(path.abspath(__file__))
 
-PARSED_DOCS_DIR = path.join(DIRNAME, "parsed_docs")
-DOWNLOADED_DOCS_DIR = path.join(DIRNAME, "downloaded_materials", "docs")
-RENDERED_OBJS_FILE = path.join(GENERATED_CODE_DIRNAME, "generated_items_one_file.py")
-RENDERED_REQUESTS_FILE = path.join(GENERATED_CODE_DIRNAME, "generated_requests_one_file.py")
-DOWNLOADED_MODEL_FILES = path.join(DIRNAME, "downloaded_model_files/")
-PARSED_MODELS_FILE = path.join(DIRNAME, "parsed_models.json")
+DOWNLOADED_MATERIALS_DIR = path.join(ROOT_DIR, "downloaded_materials")
+DOWNLOADED_MODEL_FILES = path.join(DOWNLOADED_MATERIALS_DIR, "model_files")
+DOWNLOADED_DOCS_DIR = path.join(DOWNLOADED_MATERIALS_DIR, "docs")
+DOWNLOADED_JSON_DIR = path.join(DOWNLOADED_MATERIALS_DIR, "json_definitions")
 
-DOCS_TO_PARSE_FILE = path.join(DIRNAME, "docs_to_parse.txt")
+GENERATED_CODE_DIR = path.join(ROOT_DIR, "generated_code")
+RENDERED_DOC_OBJS_FILE = path.join(GENERATED_CODE_DIR, "doc_objs.py")
+RENDERED_MODEL_OBJS_FILE = path.join(GENERATED_CODE_DIR, "model_objs.py")
+RENDERED_OBJS_FILE = path.join(GENERATED_CODE_DIR, "generated_items_one_file.py")
+RENDERED_REQUESTS_FILE = path.join(GENERATED_CODE_DIR, "generated_requests_one_file.py")
 
-SQL_OBJECT_MAKO_TEMPLATE = Template(filename=path.join(TEMPLATE_DIRNAME , "sql_object.mako"))
-OBJECT_MAKO_TEMPLATE = Template(filename=path.join(TEMPLATE_DIRNAME, "object.mako"))
-REQUEST_MAKO_TEMPLATE = Template(filename=path.join(TEMPLATE_DIRNAME, "request.mako"))
+OBJECTS_FILE = path.join(GENERATED_CODE_DIR, "objects.json")
+DOC_OBJS_FILE = path.join(GENERATED_CODE_DIR, "doc_objs.json")
+MODEL_OBJS_FILE = path.join(GENERATED_CODE_DIR, "model_objs.json")
+REQUESTS_FILE = path.join(GENERATED_CODE_DIR, "requests.json")
+PARSED_MODELS_FILE = path.join(ROOT_DIR, "parsed_models.json")
+DOCS_TO_PARSE_FILE = path.join(ROOT_DIR, "docs_to_parse.txt")
 
+TEMPLATE_DIR = path.join(ROOT_DIR, "templates")
+SQL_OBJECT_MAKO_TEMPLATE = Template(filename=path.join(TEMPLATE_DIR , "sql_object.mako"))
+OBJECT_MAKO_TEMPLATE = Template(filename=path.join(TEMPLATE_DIR, "object.mako"))
+REQUEST_MAKO_TEMPLATE = Template(filename=path.join(TEMPLATE_DIR, "request.mako"))
+LOOKUP = TemplateLookup(directories=TEMPLATE_DIR)
+API_V1_CLIENT_MAKO_TEMPLATE = Template(filename=path.join(TEMPLATE_DIR, "api_v1_client.mako"), lookup=LOOKUP)
 
-OBJ_FIELD_LINE_RE = re.compile(r'"(.*)": "*([^"]*)"*.*,*')
 CANVAS_FORMAT_VALUE_RE = re.compile(r':([^/]*)')
 PYTHON_FORMAT_VALUE_RE = r'{\1}'
 PYTHON_FORMATTED_VALUES_RE = re.compile(r'{([^}]*)')
@@ -66,13 +75,14 @@ class OptionEnum:
 class FieldInit:
     """the [py,sql]_repr fields format how the field will be initialized in the python and sql code"""
     # both of these map from the documented model types to the named type
-    _PYTHON_TYPEMAP = {"string": "str", "integer": "int", "number": "int", "float": "float", "boolean": "bool", "datetime": "datetime", "object": "obj", "any" : "Any", None: "None"}
+    _PYTHON_TYPEMAP = {"string": "str", "integer": "int", "number": "int", "float": "float", "boolean": "bool", "datetime": "datetime", "object": "obj", "any" : "Any", None: "None", "void": "None"}
     _SQL_TYPEMAP = {"string":"String", "boolean":"Boolean", "integer":"Integer","number":"Integer", "datetime":"DateTime", "array":"JsonObject(List)", "object" :"JsonObject(Dict)", "any": "String", None:"None"}
     # _type_: str = ""
     #NOTE: "object" in models refers to dicts and values can be other objects, arrays are lists
     """ a list of additional strings to include in the repr (usually only relevent for sql repr"""
-    sql_args: List[str] = field(default_factory=list, init=False)
     type_: str
+    sql_args: List[str] = field(default_factory=list, init=False)
+    _data_type_: str = "default"
 
     # @property
     # def type_(self):
@@ -108,6 +118,9 @@ class FieldInit:
             sql_type_ = self.sql_type_
         return f"Column({sql_type_}{self.sql_args_repr()})"
     
+    def __str__(self):
+        return self.py_repr()
+    
     def basic_repr(self):
         # intented to be overloaded in subclasses
         return self.type_
@@ -116,6 +129,7 @@ class FieldInit:
 class ForeignKeyFieldInit(FieldInit):
     class_name: str = ""
     field_name: str = ""
+    _data_type_: str = "foreign_key"
 
     def __post_init__(self):
         self.sql_args.append(f"ForeignKey('{self.class_name}.{self.field_name}')")
@@ -123,28 +137,45 @@ class ForeignKeyFieldInit(FieldInit):
 @dataclass
 class EnumFieldInit(FieldInit):
     type_: str = "enum" # type_ will be overwritten with enum definition
-    enum_name: str = None
+    name: str = None
+    _data_type_: str = "enum"
+    values: List[str] = field(default_factory=list)
 
+    @property 
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        self._name = value + "AllowedValues"
+
+    #TODO: names should be snake case in fields, but camel case in Requests ( if not in objects)
     def __post_init__(self):
         # make enum_name required
-        if not self.enum_name:
+        if not self.name:
             raise ValueError("enum_name must be set")
+    
+    def enum_def(self):
+        if not self.values:
+            raise ValueError("values must be set")
+        return f"{self.name} = enum.Enum('{self.name}', {self.values})"
 
     def py_repr(self):
-        return super().py_repr(py_type_=self.enum_name)
+        return super().py_repr(py_type_=self.name)
 
     def sql_repr(self):
-        sql_type_ = f"Enum({self.enum_name})"
+        sql_type_ = f"Enum({self.name})"
         return super().sql_repr(sql_type_=sql_type_)
 
 @dataclass
 class RefFieldInit(FieldInit):
     """for references to other classes (sql orm relationships and normal py references i.e. parent: ParentClass = None)"""
-    type_: str = "$ref"
+    type_: str = "$ref" # placeholder
     class_name: str = ""
     """should be table name for sql objects"""
     back_populates: str = ""
     secondary: str = ""
+    _data_type_: str = "ref"
 
     def __post_init__(self):
         if not self.class_name and not self.type_:
@@ -170,7 +201,7 @@ class JsonFieldInit(FieldInit):
     """for json fields"""
     type_: str = None
     # override type_ to remove from init
-    _data_type_: str = None
+    _data_type_: str = "json"
 
     def sql_repr(self, py_repr_str):
         repr_ = super().sql_repr(sql_type_="JsonObject")
@@ -221,31 +252,21 @@ class ObjectField:
     name: str = None
     description: str = None
     example: str = None
-    # TODO: create type_ object that handles all type logic
-    type_: InitVar[str] = None
     """migrated to InitVar after type_ was replaced by init to help ease migration"""
-    init: FieldInit = None
+    type_: FieldInit = None
     # documented_type: str = None
     # primary_key: bool = None
-    _option_enum: OptionEnum = None
-
-    def __post_init__(self, type_):
-        # allow for type_ to be passed resulting in creation of default InitField with type_
-        if type_ is not None:
-            if self.init is not None:
-                raise ValueError("cannot specify both type and init")
-            else:
-                self.init = FieldInit(type_=type_)
 
     @property
-    def option_enum(self):
-        return self._option_enum
+    def is_enum(self):
+        return type(self.type_) is EnumFieldInit
 
-    @option_enum.setter
-    def option_enum(self, value):
-        self._option_enum = value
-        if value is not None:
-            self.init = EnumFieldInit(enum_name=value.name)
+    @property
+    def enum_description(self):
+        if self.is_enum:
+            return f'"""Enum for the allowed values of the {self.name} field"""'
+        else:
+            raise ValueError("field is not an enum")
 
     def as_dict(self):
         attrs = {s: getattr(self, s, None) for s in self.__slots__}
@@ -262,12 +283,12 @@ class ObjectField:
             self.example = ''
         # if self.type_ is None:
         #     self.type_ = 'unknown_type'
-        if self.init is None:
-            self.init = FieldInit(type_='unknown_type')
+        if self.type_ is None:
+            self.type_ = FieldInit(type_='unknown_type')
         if self.name is None:
             self.name = 'undefined_field_name'
         elif self.name == "id":
-            self.init.sql_args.append("primary_key=True")
+            self.type_.sql_args.append("primary_key=True")
         # if self.documented_type is None:
         #     self.documented_type = 'unknown_type'
         return self
@@ -280,10 +301,10 @@ class ObjectField:
         #     self.documented_type = other.documented_type
         # elif other.type_ is not None and self.type_ != other.type_:
         #     warnings.warn(f"Field {self.name} has conflicting types {self.type_} and {other.type_}.\nTaking {self.type_}")
-        if self.init is None:
-            self.init = other.init
-        elif other.init is not None and type(self.init) != type(other.init):
-            warnings.warn(f"Field {self.name} has conflicting init types {type(self.init).__name__} and {type(other.init).__name__}.\nTaking {type(self.init).__name__}")
+        if self.type_ is None:
+            self.type_ = other.type_
+        elif other.type_ is not None and type(self.type_) != type(other.type_):
+            warnings.warn(f"Field {self.name} has conflicting init types {type(self.type_).__name__} and {type(other.type_).__name__}.\nTaking {type(self.type_).__name__}")
         # else other is None or self.type_ == other.type_ so do nothing
         if self.option_enum is None and other.option_enum is not None:
             self.option_enum = other.option_enum
@@ -299,6 +320,8 @@ class ObjectDefinition:
     description: str = None
     fields: list = field(default_factory=list)
     # relationships = field(default_factory=list)
+    model_json: dict = None
+    docs_html: str = None
 
     @property
     def fields_dict(self):
@@ -311,10 +334,7 @@ class ObjectDefinition:
     @property
     def is_table(self) -> bool:
         """determines whether an object is a table based on whether a field is called id"""
-        for field in self.fields:
-            if field.name == "id":
-                return True
-        return False
+        return "id" in self.fields_dict.keys()
     
     def cleanup(self):
         """ fully preps the object for rendering"""
@@ -323,9 +343,11 @@ class ObjectDefinition:
         self.set_defaults()
         self.organize_fields()
         self.rectify_foriegn_key_fields()
+
     
     def render(self):
         """ default render is to render as an sql orm class"""
+        self.cleanup()
         return SQL_OBJECT_MAKO_TEMPLATE.render(obj=self)
     
     def organize_fields(self):
@@ -333,23 +355,31 @@ class ObjectDefinition:
         - moves id field to the front if present
         - moves _id foreign key fields to the end if present
         - moves {field_name} and {field_name}_id fields to the end and puts them after one another
+        - moves relationship fields to the end if present
         """
+        def move_field(field, index):
+            self.fields.remove(field)
+            if index == -1:
+                self.fields.append(field)
+            else:
+                self.fields.insert(index, field)
+        # move id field to the front if present
         if "id" in self.fields_dict.keys():
             if len(self.fields) > 0 and self.fields[0].name != "id":
-                idx = self.fields.index(self.fields_dict["id"])
-                id_field = self.fields.pop(idx)
-                self.fields.insert(0, id_field)
+                move_field(self.fields_dict["id"], 0)
+        # move _id foreign key fields to the end if present
         for field in self.fields:
             if field.name.endswith("_id"):
                 # move {field_name}_id field to the end
-                idx = self.fields.index(field)
-                self.fields.pop(idx)
-                self.fields.append(field)
+                move_field(field, -1)
                 # move {field_name} field to the end
                 if field.name[:-3] in self.fields_dict.keys():
-                    idx = self.fields.index(self.fields_dict[field.name[:-3]])
-                    id_field = self.fields.pop(idx)
-                    self.fields.append(id_field)
+                    move_field(self.fields_dict[field.name[:-3]], -1)
+        # move relationship fields to the end if present
+        for field in self.fields:
+            if type(field.type_) is RefFieldInit:
+                move_field(field, -1)
+
 
     def as_dict(self):
         attrs = {s: getattr(self, s, None) for s in self.__slots__}
@@ -361,9 +391,13 @@ class ObjectDefinition:
         if self.name != other.name:
             warnings.warn(f"attempting to merge {self.name} with {other.name}\n taking {self.name}")
         self.description = take_longer(self.description, other.description)
+        if other.docs_html is not None and self.docs_html is None:
+            self.docs_html = other.docs_html
+        if other.model_json is not None and self.model_json is None:
+            self.model_json = other.model_json
 
         for field in other.fields:
-            if field.name in self.fields_dict:
+            if field.name in self.fields_dict.keys():
                 if field != self.fields_dict[field.name]:
                     self.fields_dict[field.name].merge(field)
                 # fields are identical, do nothing
@@ -401,15 +435,26 @@ class ObjectDefinition:
         this is done to easily make the object into a sql table 
         and avoid storing objects within other tables as strings"""
         print(f"Adding id field to {self.name}")
-        self.fields.insert(0,ObjectField(name="id", type_="Integer", description=f"The unique identifier of the {self.name}", example="123456"))
+        self.fields.insert(0,ObjectField(name="id", type_=FieldInit("integer"), description=f"The unique identifier of the {self.name}", example="123456"))
 
-@dataclass
+
+@dataclass(slots=True)
 class RequestParameter:
-    parameter: str = None
+    name: str = None
     required: bool = None
-    type_: str = None
+    type_: FieldInit = None
     description: str = None
     allowed_values: list[str] = field(default_factory=list)
+    object_: str = None
+
+    def __str__(self):
+        return f"{self.param_repr()}: {self.type_.py_repr()} {'= None' if self.required else ''}"
+    
+    def param_repr(self):
+        if self.object_ is not None:
+            return f"{self.object_}_{self.name}"
+        else:
+            return self.name
 
 class MethodEnum(str, enum.Enum):
     POST = "POST"
@@ -418,12 +463,73 @@ class MethodEnum(str, enum.Enum):
     DELETE = "DELETE"
     PUT = "PUT"
 
-@dataclass
+@dataclass(slots=True)
 class Request:
     """methods describe possible requests"""
     name: str = None
-    description: str = None
+    description_: str = None
+    notes: str = None
+    summary: str = None
     endpoint: str = None
     method: "MethodEnum" = None
-    needs: list[str] = field(default_factory=list)
     parameters: list[RequestParameter] = field(default_factory=list)
+    return_type: FieldInit = None
+    #TODO: return from function for non get return types should return success or failure
+    #TODO: creating parameters dict
+
+    @property
+    def description(self):
+        """modify getter to return the best description between
+        the description_, and notes fields"""
+        return take_longer(self.description_, self.notes)
+    
+    @description.setter
+    def description(self, value):
+        self.description_ = value
+
+    @property
+    def classname(self):
+        return to_classname(self.name)
+
+    def sorted_params(self):
+        """puts required parameters first"""
+        return sorted(self.parameters, key=lambda param: (param.required, param.name))
+
+    def param_repr(self):
+        params = self.sorted_params()
+        return ", ".join(str(param) for param in params)
+    
+    def param_field_repr(self):
+        params = self.sorted_params()
+        return "\n".join(f"{param.name}: {param.type_.py_repr()}" for param in params)
+    
+    def render(self):
+        #TODO: replace \n in description with \n\t to fix indenting
+        # (Dont actually modify the description make copy)
+        return REQUEST_MAKO_TEMPLATE.render(req=self)
+
+
+@dataclass(slots=True)
+class ObjectGroup:
+    group_name: str
+    objects: List[ObjectDefinition] = field(default_factory=list)
+    requests: List[Request] = field(default_factory=list)
+
+    @property
+    def classname(self):
+        return to_classname(self.group_name)
+
+    def sort_alphabetically(self):
+        self.objects.sort(key=lambda obj: obj.name)
+        self.requests.sort(key=lambda req: req.name)
+    
+    @classmethod
+    def sort_all_alphabetically(cls, groups):
+        for group in groups:
+            group.sort_alphabetically()
+        groups.sort(key=lambda group: group.group_name)
+
+    @classmethod
+    def render_api_client(self, object_groups):
+        self.sort_all_alphabetically(object_groups)
+        return API_V1_CLIENT_MAKO_TEMPLATE.render(object_groups=object_groups)

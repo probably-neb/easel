@@ -8,8 +8,6 @@ import asyncio
 import timeit
 # from aiohttp import aiofile
 from ..core.api import get_course_structure
-from tinydb import Query 
-from tinydb.table import Document
 from pprint import pprint
 import time
 
@@ -18,7 +16,7 @@ Canvas api cli app %s
 %s
 """ % (get_version(), get_version_banner())
 
-class Courses(Controller):
+class CourseController(Controller):
     class Meta:
         label = 'courses'
         stacked_type="nested"

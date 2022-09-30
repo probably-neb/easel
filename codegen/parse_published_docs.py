@@ -16,10 +16,28 @@ from bs4.element import ResultSet, Tag
 from typing import Any, List, Tuple, Union
 
 from utils import depluralize
+INDEX_URL = 'https://canvas.instructure.com/doc/api/index.html'
+BASE_URL = path.dirname(INDEX_URL)
+OBJ_FIELD_LINE_RE = re.compile(r'"(.*)":\s*(.*)[,]$')
 
 def get_docs_to_parse() -> List[str]:
-    with open(DOCS_TO_PARSE_FILE, "r") as docs_to_parse:
-        urls = docs_to_parse.readlines()
+    urls = []
+    if path.exists(DOCS_TO_PARSE_FILE):
+    #     with open(DOCS_TO_PARSE_FILE, "r") as f:
+    #         urls = f.read().splitlines()
+    # else:
+        indexpage = requests.get(INDEX_URL)
+        content = indexpage.content
+        soup = BeautifulSoup(content, "html.parser")
+        h2s = soup.find_all("h2")
+        for h2 in h2s:
+            if h2.string == "Resources":
+                for sibling in h2.next_siblings:
+                    if sibling.name == "h2":
+                        break
+                    if sibling.name == "a":
+                        url = '/'.join([BASE_URL, sibling['href']])
+                        urls.append(url)
     return urls
 
 def save_doc_to_file(url, content):
@@ -74,9 +92,7 @@ def parse_objects(obj_defs: ResultSet) -> List[ObjectDefinition]:
         obj = ObjectDefinition()
         obj.name = get_object_name(obj_def)
         obj.fields = get_object_fields(obj_def)
-        if not obj.is_table:
-            # see documentation in add_id_field function for why this is necessary
-            obj.add_id_field()
+        obj.docs_html = obj_def.prettify()
         objects.append(obj)
 
     return objects
@@ -153,14 +169,15 @@ def get_request_name(req_def: Tag) -> str:
 def parse_requests(req_defs: ResultSet) -> List[Request]:
     requests = []
     for req_def in req_defs:
-        req_dict = {
-        'name': get_request_name(req_def),
-        'parameters': parse_params(get_params(req_def)),
-        'description': req_def.p.text.strip()
-        }
-        req_dict['method'], canv_endpoint = (req_def.find(class_="endpoint").text.strip().split())
-        req_dict['endpoint'],req_dict['needs'] = get_endpoint_and_needs(canv_endpoint)
-        requests.append(Request(**req_dict))
+        req = Request()
+        req.name = get_request_name(req_def)
+        req.params = parse_params(get_params(req_def))
+        req.description = req_def.find("a").text.strip()
+        if req_def.find("p") is not None:
+            req.description += ("\n" + req_def.find("p").text.strip())
+        req.method, canv_endpoint = (req_def.find(class_="endpoint").text.strip().split())
+        req.endpoint,req.needs = get_endpoint_and_needs(canv_endpoint)
+        requests.append(req)
     return requests
 
 def parse_doc(page_soup: BeautifulSoup) -> Tuple[List[ObjectDefinition], List[Request]]:
@@ -183,42 +200,8 @@ def get_doc_objs_and_requests():
     return objects, requests
     # return {"objects":objects, "requests":requests}
 
-# def main() -> None:
-#     try: 
-#         os.mkdir(PARSED_DOCS_DIR)
-#     except FileExistsError:
-#         pass
-#     objects = []
-#     requests = []
-#     for url in get_docs_to_parse():
-#         url_name = get_url_name(url)
-#         objs, requests = parse_doc(get_doc_page_soup(url))
-        
-#         table_obj_rends: list = get_table_objects()
-#         table_obj_rends_dict = dict(map(lambda o: (o.name, o), table_obj_rends))
-#         """get renders of parsed objects from models in canvas github repo"""
-#         table_objs_to_rend = []
-#         objs_to_rend = []
-#         for obj in objs:
-#             if obj.is_table:
-#                 table_objs_to_rend.append(table_obj_rends_dict[obj.name])
-#             else:
-#                 if table_obj_rends_dict.get(obj.name):
-#                     model_fields = table_obj_rends_dict[obj.name].fields
-#                     merge_types_from_model(obj.fields, model_fields)
-                
-#                 objs_to_rend.append(obj)
-#         obj_rends = list(render_table_objects(table_objs_to_rend).values()) + render_objects(objs_to_rend)
-#         request_rends = render_requests(requests)
-
-#         with open(path.join(PARSED_DOCS_DIR, url_name+".py"), "w") as outfile:
-#             for obj_rend in obj_rends:
-#                 outfile.write(obj_rend)
-#                 outfile.write("\n\n")
-            
-#             for req_rend in request_rends:
-#                 outfile.write(req_rend)
-#                 outfile.write("\n\n")
+def main() -> None:
+    get_docs_to_parse()
 
 if __name__ == '__main__':
     main()

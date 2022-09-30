@@ -5,9 +5,8 @@ aiohttp
 jinja2
 pyyaml
 colorlog
-tinydb
 requests
 bs4
-BetterJSONStorage
 rich
 mako
+sqlalchemy
